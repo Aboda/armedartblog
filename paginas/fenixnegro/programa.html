@@ -1,0 +1,3086 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <base target="_top">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="This tool assists the CEO in managing store inventory and spotting trends.">
+    <title>CEO Inventory Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #f39c12;
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --button-hover-color: #2980b9;
+            --button-text-color: #fff;
+            --input-border-color: #ccc;
+            --input-focus-color: #3498db;
+        }
+        body {
+            font-family: sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.5em;
+            box-sizing: border-box;
+        }
+        main {
+            width: 90%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: var(--button-hover-color);
+        }
+        input[type="text"],
+        input[type="file"] {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid var(--input-border-color);
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            border-color: var(--input-focus-color);
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .section-title {
+            color: var(--primary-color);
+            margin-top: 30px;
+            color: var(--text-color);
+        }
+        .feedback-message {
+            margin-top: 15px;
+            text-align: center;
+            min-height: 1.2em;
+            font-weight: bold;
+        }
+        .feedback-message.success { color: var(--secondary-color); }
+        .feedback-message.error { color: #e74c3c; }
+        .icon-grid-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            padding: 20px;
+            width: 100%;
+        }
+        .icon-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 160px;
+            height: 160px;
+            background-color: var(--secondary-color);
+            color: var(--button-text-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.2s ease;
+            text-align: center;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        .icon-button:hover {
+            background-color: #27ae60;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .icon-button .icon-placeholder {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+        }
+        .icon-button .icon-name {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .data-upload-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .back-btn {
+            background-color: var(--secondary-color);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #27ae60;
+        }
+        /* Styles for Results Overlay */
+        .results-overlay {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .results-modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 80%;
+            max-width: 750px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .results-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .results-table th {
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+        }
+        /* Styles for Progress Overlay */
+        .progress-overlay {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7); /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Higher z-index */
+        }
+        .progress-modal-content {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .progress-modal-content p {
+            font-size: 1.2em;
+            color: var(--text-color);
+            margin: 0;
+        }
+        /* End Styles for Progress Overlay */
+        .results-table .status-success { color: var(--secondary-color); }
+        .results-table .status-error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div id="app-root"></div>
+    <script>
+        window.addEventListener('load', () => {
+            const appRoot = document.getElementById('app-root');
+            // --- App State ---
+            let currentUser = null; // Holds user session info (role, etc.)
+            let db = null;          // Holds the single DB connection instance
+            let dbOpeningPromise = null; // Manages concurrent calls to initIndexedDB
+
+
+            // --- Helper Functions ---
+            function createElement(tag, props = {}, children = []) {
+                const el = document.createElement(tag);
+                Object.entries(props).forEach(([key, value]) => {
+                    if (key === 'style' && typeof value === 'object') {
+                        Object.assign(el.style, value);
+                    } else if (key === 'className') {
+                        el.className = value;
+                    } else if (key.startsWith('on') && typeof value === 'function') {
+                        el.addEventListener(key.substring(2).toLowerCase(), value);
+                    } else {
+                        el.setAttribute(key, value);
+                    }
+                });
+                const childArray = Array.isArray(children) ? children : [children];
+                childArray.forEach(child => {
+                    if (typeof child === 'string' || typeof child === 'number') {
+                        el.appendChild(document.createTextNode(child.toString()));
+                    } else if (child instanceof Node) {
+                        el.appendChild(child);
+                    }
+                });
+                return el;
+            }
+            
+            function clearElement(element) {
+                element.innerHTML = '';
+            }
+
+            // --- IndexedDB Setup ---
+            async function initIndexedDB() {
+                if (db) {
+                    return db; // Return existing open connection
+                }
+                if (dbOpeningPromise) {
+                    return dbOpeningPromise; // Return ongoing opening promise if init is in progress
+                }
+
+                dbOpeningPromise = new Promise((resolve, reject) => {
+                    const request = indexedDB.open("InventoryDB", 4); // Increment version for new store
+
+                    request.onupgradeneeded = (event) => {
+                        const currentDB = event.target.result; // Use currentDB within this scope
+
+                        // For All_Stock, ensure it uses auto-incrementing keys
+                        // Delete if exists to apply new key strategy, then (re)create.
+                        if (currentDB.objectStoreNames.contains("All_Stock")) {
+                            currentDB.deleteObjectStore("All_Stock");
+                        }
+                        currentDB.createObjectStore("All_Stock", { autoIncrement: true });
+
+                        if (!currentDB.objectStoreNames.contains("All_Change")) {
+                            currentDB.createObjectStore("All_Change", { autoIncrement: true });
+                        }
+                        if (!currentDB.objectStoreNames.contains("Auto_Dict")) {
+                            currentDB.createObjectStore("Auto_Dict", { keyPath: "item_id" });
+                        }
+                        if (!currentDB.objectStoreNames.contains("All_Stores")) {
+                            const storeObjectStore = currentDB.createObjectStore("All_Stores", { keyPath: "name" });
+                            // Add initial store data
+                            const transaction = event.target.transaction; // Use the existing version change transaction
+                            // Ensure we are adding to the correct store, which is storeObjectStore
+                            if (transaction) { // Check if transaction is available
+                                const storeForAdding = transaction.objectStore("All_Stores");
+                                const initialStores = [
+                                    { name: "Bensalem, PA", acronym: "GVB" },
+                                    { name: "Warminster, PA", acronym: "GVW" },
+                                    { name: "Feasterville, PA", acronym: "GVF" },
+                                    { name: "Warehouse (PA)", acronym: "WHO" }
+                                ];
+                                initialStores.forEach(item => storeForAdding.add(item));
+                            }
+                        }
+                        // Add Integrated_data object store
+                        if (!currentDB.objectStoreNames.contains("Integrated_data")) {
+                            const integratedDataStore = currentDB.createObjectStore("Integrated_data", { autoIncrement: true });
+                            integratedDataStore.createIndex("item_id_week_location", ["item_id", "week_start_date", "location"], { unique: true });
+                            integratedDataStore.createIndex("item_id", "item_id", { unique: false });
+                        }
+                    };
+                    request.onsuccess = (event) => {
+                        db = event.target.result; // Assign to the module-scoped db variable
+                        db.onclose = () => { // Handle if the connection closes unexpectedly or is closed elsewhere
+                            console.log("Database connection closed.");
+                            db = null; // Reset the global db instance
+                        };
+                        dbOpeningPromise = null; // Clear the promise once resolved
+                        resolve(db);
+                    };
+                    request.onerror = (event) => {
+                        console.error("IndexedDB error during open: ", event.target.errorCode);
+                        dbOpeningPromise = null; // Clear the promise on error
+                        reject("IndexedDB error: " + event.target.errorCode);
+                    };
+                });
+                return dbOpeningPromise;
+            }
+
+            // --- Store Mapping Function ---
+            async function getStoreMappings() {
+                const db = await initIndexedDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(["All_Stores"], "readonly");
+                    const store = transaction.objectStore("All_Stores");
+                    const request = store.getAll();
+                    request.onsuccess = (event) => {
+                        resolve(event.target.result.map(item => [item.name, item.acronym]));
+                    };
+                    request.onerror = (event) => {
+                        console.error("Error fetching store mappings:", event.target.error);
+                        reject(new Error("Error fetching store mappings: " + (event.target.errorCode || event.target.error.name)));
+                    };
+                });
+            }
+
+            // --- Data Processing Functions ---
+            async function IngestChange(inputData, fileName) {
+                let db;
+                let timeStampWeek = null; // Initialize timestamp
+                try {
+                    db = await initIndexedDB();
+                    const storeMappingsData = await getStoreMappings();
+                    const dict_loc = Object.fromEntries(storeMappingsData);
+
+                    const ws = inputData;
+
+                    const timeHeaderRow = ws[1]; // Expected "Inventory Change from..." string
+                    if (!timeHeaderRow || !timeHeaderRow[0]) {
+                        return { success: false, message: `Timestamp header (expected at row 2, cell 1) not found in change file: ${fileName}.`, timestamp: null };
+                    }
+                    const timeStampFullString = timeHeaderRow[0];
+                    const timeStampStart = ConvertDate(ExtractChangeStartTimeStamp(timeStampFullString || ""));
+                    const timeStampEnd = ConvertDate(ExtractChangeEndTimeStamp(timeStampFullString || ""));
+                    timeStampWeek = timeStampStart; // Assign to outer scope variable
+
+                    if (!timeStampStart || !timeStampEnd) {
+                        return { success: false, message: `Invalid timestamp format in change file: ${fileName}.`, timestamp: timeStampWeek };
+                    }
+
+                    const headerRowIndex = ws.findIndex(row => row && row[0] && typeof row[0] === 'string' && row[0].toLowerCase() === "product");
+                    if (headerRowIndex === -1) {
+                        return { success: false, message: `"Product" header row not found in change file: ${fileName}.` };
+                    }
+                    const headerRow = ws[headerRowIndex];
+                    const endRow = ws.findLastIndex(row => row[0] === "Total");
+                    const dataArray = ws.slice(headerRowIndex + 1,endRow);
+
+                    const prod_col_idx = headerRow.findIndex(h => typeof h === 'string' && h.toLowerCase() === "product");
+                    const vari_col_idx = headerRow.findIndex(h => typeof h === 'string' && h.toLowerCase() === "variant");
+                    const loca_col_idx = headerRow.findIndex(h => typeof h === 'string' && h.toLowerCase() === "location");
+                    const cate_col_idx = headerRow.findIndex(h => typeof h === 'string' && (h.toLowerCase() === "categories" || h.toLowerCase() === "category"));
+                    const sales_col_idx = headerRow.findIndex(h => typeof h === 'string' && h.toLowerCase().includes("sold"));
+
+                    if ([prod_col_idx, vari_col_idx, loca_col_idx, cate_col_idx, sales_col_idx].some(idx => idx === -1)) {
+                        return { success: false, message: `One or more required columns (Product, Variant, Location, Categories, Sold) not found in header of change file: ${fileName}, ${headerRow}.`, timestamp: timeStampWeek };
+                    }
+
+                    let allChangeEntries = [];
+                    let dataForAutoDict = [];
+
+                    for (const row of dataArray) {
+                        if (!row) return; // Skip empty or undefined rows
+                        if (row.every(cell => !cell || cell.trim() === "")) continue; // Skip rows with all empty cells
+
+                        const rawProductName = row[prod_col_idx] || "";
+                        if (DecideCases(rawProductName)) continue; // Skip "Case of..." items
+
+                        const productName = IgnoreCases(rawProductName);
+                        const variantName = RemoveBundleSimbol(row[vari_col_idx] || "");
+                        const productCategory = row[cate_col_idx] || "";
+                        const locationValue = row[loca_col_idx] || "";
+                        const locationAcronym = dict_loc[locationValue] || locationValue;
+                        
+                        const soldPackagesValue = Number(row[sales_col_idx]) || 0;
+                        const presentationAmount = SpotCases(rawProductName);
+                        const itemKey = product_key(productCategory, productName, variantName);
+                        const calculatedSoldPieces = soldPackagesValue * presentationAmount;
+
+                        const changeEntry = {
+                            item_id: itemKey,
+                            timestamp: timeStampWeek,
+                            location: locationAcronym,
+                            category: productCategory,
+                            product: productName,
+                            variant: variantName,
+                            soldQty: calculatedSoldPieces,
+                        };
+                        allChangeEntries.push(changeEntry);
+
+                        dataForAutoDict.push([productCategory, productName, variantName, presentationAmount]);
+                    }
+
+                    if (allChangeEntries.length === 0) {
+                        return { success: false, message: `No valid data rows found after filtering in ${fileName}.`, timestamp: timeStampWeek };
+                    }
+
+                    const transaction = db.transaction(["All_Change"], "readwrite");
+                    const store = transaction.objectStore("All_Change");
+                    
+                    let addedCount = 0;
+                    await Promise.all(allChangeEntries.map(entry => {
+                        return new Promise((resolve, reject) => {
+                            const request = store.add(entry);
+                            request.onsuccess = () => {
+                                addedCount++;
+                                resolve();
+                            };
+                            request.onerror = (event) => {
+                                console.warn(`Failed to add entry to All_Change for ${fileName}: ${entry.item_id}`, event.target.error);
+                                reject(event.target.error); // Propagate error to stop Promise.all if one fails, or handle differently
+                            };
+                        });
+                    }));
+                    
+                    if (dataForAutoDict.length > 0) {
+                        await processNewDataForAutoDict(dataForAutoDict);
+                    }
+
+                    return { success: true, message: `Successfully ingested ${addedCount} entries`, timestamp: timeStampWeek };
+                } catch (error) {
+                    console.error("Error in IngestChange:", error);
+                    if (error.message && error.message.includes("Error fetching store mappings")) {
+                         return { success: false, message: "Failed to load store configuration. Ensure stores are set up and try again.", timestamp: timeStampWeek };
+                    }
+                    return { success: false, message: `Error processing change data for ${fileName}: ` + (error.message || error), timestamp: timeStampWeek };
+                }
+            }
+
+            async function IngestStock(inputData) {
+                let fileTimestamp = null; // Initialize timestamp at the beginning of the function
+                try {
+                    const db = await initIndexedDB();
+                    const storeMappingsData = await getStoreMappings();
+                    const dict_loc = Object.fromEntries(storeMappingsData);
+
+                    const ws = inputData;
+                    
+                    if (ws && ws[1] && ws[1][0]) { // Check for timestamp header
+                        try {
+                            fileTimestamp = ExtractStockTimeStamp(ws[1][0]);
+                        } catch (e) {
+                            console.warn("Could not parse timestamp from stock file header:", ws[1][0], e);
+                            // fileTimestamp remains null
+                        }
+                    } else {
+                        console.warn("Timestamp header (ws[1][0]) not found or incomplete in stock file.");
+                    }
+
+                    const startRow = ws.findIndex(row => row[0] === "Product") + 1;
+                    const endRow = ws.findLastIndex(row => row[0] === "Total");
+                    const dataArray = ws.slice(startRow,endRow);
+                    const transaction = db.transaction(["All_Stock"], "readwrite");
+                    const store = transaction.objectStore("All_Stock");
+                    
+                    // Clear existing data in All_Stock
+                    await new Promise((resolve, reject) => {
+                    const clearRequest = store.clear();
+                    clearRequest.onsuccess = () => resolve();
+                    clearRequest.onerror = (event) => reject("Error clearing All_Stock store: " + event.target.error);
+                    });
+                    console.log("All_Stock store cleared.");
+
+                    const stockDataForAutoDict = []; // To collect data for Auto_Dict processing
+
+                    dataArray.forEach(row => {
+                        const rawProductName = row[0] || "";
+                        const productName = IgnoreCases(rawProductName);
+                        const variantName = row[1] || "";
+                        const categoryName = row[3] || "";
+                        const locationAcronym = dict_loc[row[2]] || row[2];
+                        let rawInStock = Number(row[4]) || 0;
+                        if (rawInStock < 0) rawInStock = 0;
+                        const presentationAmount = SpotCases(rawProductName);
+                        const composite_item_id = product_key(categoryName,productName,variantName); // Keep this as a data field
+
+                        const entry_as_object = {
+                            item_id: composite_item_id,
+                            timestamp: fileTimestamp, // Use the extracted fileTimestamp
+                            location: locationAcronym,
+                            category: categoryName,
+                            product: productName,
+                            variant: variantName,
+                            presentationAmount,
+                            packagesInStorage: rawInStock,
+                            piecesInStorage: Math.round(rawInStock * presentationAmount),
+                        };
+
+                        store.add(entry_as_object);
+
+                        // Prepare data for Auto_Dict, matching structure expected by processNewDataForAutoDict
+                        stockDataForAutoDict.push([
+                            categoryName,       
+                            productName,        
+                            variantName,        
+                            presentationAmount  
+                        ]);
+                    });
+
+                    await processNewDataForAutoDict(stockDataForAutoDict); // Pass the collected data
+// Send All_Stock data to server
+                    try {
+                        const allStockCSV = await getObjectStoreDataAsCSV("All_Stock");
+                        if (allStockCSV) {
+                            await sendDataToServer('All_Stock.csv', allStockCSV);
+                        }
+                    } catch (e) {
+                        console.warn("Failed to prepare or send All_Stock data to server:", e);
+                    }
+
+                    // Send Auto_Dict data to server
+                    try {
+                        const autoDictCSV = await getObjectStoreDataAsCSV("Auto_Dict");
+                        if (autoDictCSV) {
+                            await sendDataToServer('Auto_Dict.csv', autoDictCSV);
+                        }
+                    } catch (e) {
+                        console.warn("Failed to prepare or send Auto_Dict data (after stock) to server:", e);
+                    }
+                    
+
+                    return { success: true, message: "Stock data ingested successfully.", timestamp: fileTimestamp };
+                } catch (error) {
+                    console.error("Error in IngestStock:", error);
+                    return { success: false, message: "Error processing stock data: " + (error.message || error), timestamp: fileTimestamp };
+                }
+            }
+
+            async function processNewDataForAutoDict(newData) {
+                try {
+                    const db = await initIndexedDB();
+                    const transaction = db.transaction(["Auto_Dict"], "readwrite");
+                    const store = transaction.objectStore("Auto_Dict");
+
+                    for (const row of newData) {
+                        const key = product_key(row[0],row[1],row[2]);
+                        const getRequest = store.get(key);
+                        const existingEntry = await new Promise((resolve) => {
+                            getRequest.onsuccess = () => resolve(getRequest.result);
+                            getRequest.onerror = () => resolve(null);
+                        });
+
+                        if (!existingEntry) {
+                            store.add({
+                                item_id: key,
+                                category: row[0],
+                                product: row[1],
+                                variant: row[2],
+                                presentationAmount:row[3]
+                            });
+                        }
+                    }
+
+                    await new Promise((resolve) => { transaction.oncomplete = resolve; });
+                } catch (error) {
+                    console.error("Error in processNewDataForAutoDict:", error);
+                }
+            }
+
+            // --- Utility Functions ---
+            function ExtractStockTimeStamp(str) {
+                const parts = str.split(",");
+                let intermediate = parts[0].trim().split(" ").slice(-2).join(" ");
+                const year = parts[1].trim().split(" ")[0];
+                const month = MonthNumber(intermediate.split(" ")[0]);
+                const day = intermediate.split(" ")[1];
+                return `${month}/${day}/${year}`;
+            }
+
+            function MonthNumber(monthStr) {
+                const months = {
+                    "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
+                    "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"
+                };
+                return months[monthStr] || "01";
+            }
+
+            function ExtractChangeStartTimeStamp(str) {
+                const parts = str.split(",");
+                return `${parts[0].trim().split(" ").slice(-2).join(" ")},${parts[1].trim().split(" ")[0]}`;
+            }
+
+            function ExtractChangeEndTimeStamp(str) {
+                const parts = str.split(" to ")[1].split(" at ");
+                return parts[0].trim();
+            }
+
+            function ConvertDate(inputDate) {
+                try {
+                    const date = new Date(inputDate);
+                    if (isNaN(date)) return false;
+                    return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+                } catch {
+                    return false;
+                }
+            }
+
+            function IgnoreCases(inputStr) {
+                const caseTagPosition = inputStr.indexOf("(Case of ");
+                return caseTagPosition !== -1 ? inputStr.substring(0, caseTagPosition).trim() : inputStr.trim();
+            }
+
+            function SpotCases(inputStr) {
+                const caseTagPosition = inputStr.indexOf("(Case of ");
+                if (caseTagPosition !== -1) {
+                    const numStr = inputStr.slice(caseTagPosition + 9, -1).trim();
+                    return parseInt(numStr) || 1;
+                }
+                return 1;
+            }
+
+            function DecideCases(inputStr) {
+                return inputStr.indexOf("(Case of ") !== -1;
+            }
+
+            function RemoveBundleSimbol(inputStr) {
+                return inputStr.replace(" (*)", "").trim();
+            }
+
+            function product_key (category,product,variant){
+                return `${SafeKey(category,"category")}|${SafeKey(product,"product")}|${SafeKey(variant,"variant")}`;
+            }
+
+            function getWeekStartDate(dateString) { // Expects "MM/DD/YYYY"
+                if (!dateString || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+                    console.warn("Invalid date string for getWeekStartDate:", dateString);
+                    // Return a value or throw error that makes sense for your data flow
+                    // For now, let's return the original if invalid, or a known invalid marker
+                    return "INVALID_DATE"; 
+                }
+                const [month, day, year] = dateString.split('/').map(Number);
+                const date = new Date(year, month - 1, day); // JS month is 0-indexed
+                const dayOfWeek = date.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+                const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
+                const monday = new Date(date.setDate(diff));
+                return `${(monday.getMonth() + 1).toString().padStart(2, '0')}/${monday.getDate().toString().padStart(2, '0')}/${monday.getFullYear()}`;
+            }
+            function SafeKey(str,key_section) {
+                if(str){
+                    return str;
+                }else{
+                    return "no "+key_section;
+                }
+            }
+
+            // --- Categories Report Specific Functions ---
+            async function populateIntegratedData(progressCallback = () => {}) {
+                const currentDb = await initIndexedDB();
+                const transaction = currentDb.transaction(["Integrated_data", "All_Stock", "All_Change", "Auto_Dict", "All_Stores"], "readwrite");
+                const integratedDataStore = transaction.objectStore("Integrated_data");
+                const allStockStore = transaction.objectStore("All_Stock");
+                const allChangeStore = transaction.objectStore("All_Change");
+                const autoDictStore = transaction.objectStore("Auto_Dict");
+                const allStoresStore = transaction.objectStore("All_Stores");
+
+                progressCallback("Clearing previous integrated data...");
+                await new Promise(resolve => integratedDataStore.clear().onsuccess = resolve);
+                console.log("Integrated_data store cleared.");
+
+                progressCallback("Fetching: Loading Auto_Dict items...");
+                const autoDictItems = await new Promise(resolve => autoDictStore.getAll().onsuccess = e => resolve(e.target.result));
+                progressCallback("Fetching: Loading store information...");
+                const stores = await new Promise(resolve => allStoresStore.getAll().onsuccess = e => resolve(e.target.result));
+                progressCallback("Fetching: Loading all stock data...");
+                const allStockData = await new Promise(resolve => allStockStore.getAll().onsuccess = e => resolve(e.target.result));
+                progressCallback("Fetching: Loading all sales change data...");
+                const allChangeData = await new Promise(resolve => allChangeStore.getAll().onsuccess = e => resolve(e.target.result));
+
+                const weeklyDataMap = new Map(); // Key: item_id|week_start_date|location
+
+                // Process sales from All_Change
+                progressCallback("Processing: Aggregating weekly sales...");
+                for (const change of allChangeData) {
+                    const weekStartDate = getWeekStartDate(change.timestamp); // Normalize to actual week start date
+                    if (weekStartDate === "INVALID_DATE" || !weekStartDate) continue; // Skip if date is invalid
+
+                    const key = `${change.item_id}|${weekStartDate}|${change.location}`;
+                    const data = weeklyDataMap.get(key) || { item_id: change.item_id, week_start_date: weekStartDate, location: change.location, total_sales_pieces: 0, end_of_week_stock_pieces: 0 };
+                    data.total_sales_pieces += (Math.abs(change.soldQty) || 0); // Ensure sales are positive for aggregation
+                    weeklyDataMap.set(key, data);
+                }
+
+                // Process stock from All_Stock to find end-of-week stock
+                // Group stock by item_id, location, and week_start_date
+                const stockByWeek = {}; // item_id|location|week_start_date -> latest stock_pieces
+                for (const stock of allStockData) {
+                    progressCallback("Processing: Determining end-of-week stock levels (analyzing stock entries)...");
+                    if (!stock.timestamp || stock.timestamp === "INVALID_DATE") continue;
+                    const stockDate = new Date(stock.timestamp.split('/')[2], stock.timestamp.split('/')[0]-1, stock.timestamp.split('/')[1]);
+                    const weekStartDate = getWeekStartDate(stock.timestamp);
+                    if (weekStartDate === "INVALID_DATE") continue;
+
+                    const key = `${stock.item_id}|${stock.location}|${weekStartDate}`;
+                    if (!stockByWeek[key] || new Date(stock.timestamp.split('/')[2], stock.timestamp.split('/')[0]-1, stock.timestamp.split('/')[1]) > new Date(stockByWeek[key].date.split('/')[2], stockByWeek[key].date.split('/')[0]-1, stockByWeek[key].date.split('/')[1])) {
+                         stockByWeek[key] = { date: stock.timestamp, pieces: stock.piecesInStorage };
+                    }
+                }
+                
+                // Assign end-of-week stock to weeklyDataMap
+                for (const [key, data] of weeklyDataMap) {
+                    const stockMapKey = `${data.item_id}|${data.location}|${data.week_start_date}`;
+                    if (stockByWeek[stockMapKey]) {
+                        data.end_of_week_stock_pieces = stockByWeek[stockMapKey].pieces;
+                    }
+                    // If no sales for a product in a week, but stock exists, we might want to add it.
+                    // For now, focusing on weeks with sales.
+                }
+
+                // Also, consider items in Auto_Dict that might have stock but no sales in certain weeks.
+                // This part can be expanded if zero-sales weeks with stock are needed.
+                // For now, we only populate Integrated_data for item/week/location combos that had sales or explicit stock.
+
+                progressCallback("Storing: Populating integrated data store...");
+                for (const data of weeklyDataMap.values()) {
+                    try {
+                        await new Promise((resolve, reject) => {
+                            const request = integratedDataStore.add(data);
+                            request.onsuccess = resolve;
+                            request.onerror = (e) => {
+                                // If unique constraint fails, it means we tried to add a duplicate.
+                                // This shouldn't happen with the Map logic if keys are correct.
+                                console.warn("Failed to add to Integrated_data (might be duplicate):", e.target.error, data);
+                                resolve(); // Resolve anyway to not block everything
+                            };
+                        });
+                    } catch (e) {
+                        console.error("Error adding to Integrated_data store:", e, data);
+                    }
+                }
+
+                return new Promise(resolve => {
+                    transaction.oncomplete = () => {
+                        console.log("Integrated_data population complete.");
+                        resolve();
+                    };
+                    transaction.onerror = (e) => {
+                        console.error("Transaction error during Integrated_data population:", e.target.error);
+                        resolve(); // Resolve to not hang the UI
+                    };
+                });
+            }
+
+            function calculateAverage(arr) {
+                if (!arr || arr.length === 0) return 0;
+                const sum = arr.reduce((acc, val) => acc + (val || 0), 0);
+                return sum / arr.length;
+            }
+
+            function calculateChangePercent(current, average) {
+                if (average === 0) {
+                    if (current > 0) return Infinity;
+                    if (current < 0) return -Infinity;
+                    return 0; 
+                }
+                if (average === null || average === undefined || current === null || current === undefined || isNaN(current) || isNaN(average)) return NaN;
+                return ((current - average) / average) * 100;
+            }
+
+            // --- Database Management Functions ---
+            async function resetDatabase() {
+                try {
+                    // 1. Close the existing global connection if it's open
+                    if (db) {
+                        db.close(); // Request to close the connection
+                        db = null;  // Clear our reference
+                        dbOpeningPromise = null; // Clear any pending open promise
+                        console.log("Existing DB connection closed for reset.");
+                        // Give the browser a moment to process the close.
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+                    }
+
+                    // Attempt to delete the database.
+                    await new Promise((resolve, reject) => {
+                        console.log("Attempting to delete InventoryDB...");
+                        const deleteRequest = indexedDB.deleteDatabase("InventoryDB");
+
+                        deleteRequest.onsuccess = () => {
+                            console.log("InventoryDB deleted successfully.");
+                            resolve();
+                        };
+
+                        deleteRequest.onerror = (event) => {
+                            console.error("Error deleting database:", event.target.error);
+                            reject(new Error("Error deleting database: " + (event.target.error?.message || event.target.errorCode)));
+                        };
+
+                        deleteRequest.onblocked = (event) => {
+                            // This event is fired if the database is still in use.
+                            console.warn("Database deletion blocked. Existing connections need to be closed.", event);
+                            alert("Database reset is blocked. This can happen if the database is open in another tab or window, or if the browser hasn't fully closed its connection yet. Please ensure no other tabs are using this app, then try again. If the issue persists, refreshing the page or restarting your browser might help.");
+                            reject(new Error("Database deletion blocked. Please close other connections and try again."));
+                        };
+                    });
+
+                    // Re-initialize the database to recreate the schema.
+                    // The next call to initIndexedDB() by any part of the app will create it.
+                    // Optionally, you can explicitly call await initIndexedDB(); here if you need it immediately.
+                    console.log("Database reset complete. Schema will be reinitialized on next access.");
+                    return { success: true, message: "Database has been reset successfully. All data is cleared and will be reinitialized." };
+                } catch (error) {
+                    console.error("Failed to reset database:", error);
+                    return { success: false, message: `Failed to reset database: ${error.message}` };
+                }
+            }
+            
+            // --- Screens ---
+            function renderLandingScreen() {
+                clearElement(appRoot);
+                const headerEl = createElement('header', {}, 'CEO Inventory Tool');
+
+                const dataPreparationItems = [
+                    { name: 'Set up Stores', icon: 'fa-store', action: () => renderStoreSetupScreen() },
+                    { name: 'Data Upload', icon: 'fa-upload', action: () => renderDataUploadScreen() },
+                    { name: 'Download Database', icon: 'fa-download', action: () => renderDownloadDatabaseScreen() },
+                    {
+                        name: 'Reset Database',
+                        icon: 'fa-trash-alt', // Or 'fa-eraser', 'fa-history'
+                        action: async () => {
+                            if (confirm("Are you sure you want to reset all data and store configurations? This action cannot be undone.")) {
+                                const result = await resetDatabase();
+                                alert(result.message); // Provide feedback to the user
+                                renderLandingScreen(); // Re-render the landing screen
+                            }
+                        }
+                    },
+                    {
+                        name: 'Logout',
+                        icon: 'fa-sign-out-alt',
+                        action: () => {
+                            handleLogout();
+                        }
+                    }
+
+                ];
+                
+                const outputItems = [
+                    { name: 'Dashboard', icon: 'fa-chart-line', action: () => renderDashboardScreen() },
+                    { name: 'Categories Report', icon: 'fa-tags', action: () => renderCategoriesReportScreen() },
+                    { name: 'WHO Report', icon: 'fa-warehouse', action: () => renderWHOReportScreen()  },
+                    { name: 'Stores Report', icon: 'fa-store-alt', action: () => renderStoresReportScreen() }
+                ];
+
+                const actionItems = [
+                    { name: 'Place Order in Target Format', icon: 'fa-file-export', action: () => alert('Placeholder: Place Order in Target Format clicked!') }
+                ];
+
+                const createIconSection = (title, items) => {
+                    const sectionTitle = createElement('h3', { className: 'section-title', style: { textAlign: 'center' } }, title);
+                    const iconButtons = items.map(item =>
+                        createElement('div', { className: 'icon-button', onClick: item.action }, [
+                            createElement('i', { className: `fas ${item.icon} icon-placeholder` }),
+                            createElement('div', { className: 'icon-name' }, item.name)
+                        ])
+                    );
+                    const iconGrid = createElement('div', { className: 'icon-grid-container' }, iconButtons);
+                    return [sectionTitle, iconGrid];
+                };
+
+                const dataPrepSection = createIconSection('Data Preparation', dataPreparationItems);
+                const outputsSection = createIconSection('Outputs', outputItems);
+                const actionsSection = createIconSection('Actions', actionItems);
+
+                const mainEl = createElement('main', {}, [
+                    createElement('h2', { style: { textAlign: 'center', color: 'var(--primary-color)' } }, 'Main Menu'),
+                    ...dataPrepSection,
+                    ...outputsSection,
+                    ...actionsSection
+                ]);
+
+                appRoot.appendChild(headerEl);
+                appRoot.appendChild(mainEl);
+            }
+
+            function renderDataUploadScreen() {
+                clearElement(appRoot);
+                const feedbackMessageEl = createElement('p', { className: 'feedback-message' });
+                const stockFileInput = createElement('input', {
+                    type: 'file',
+                    id: 'stock-file',
+                    accept: '.csv',
+                    onChange: () => handleFileUpload('stock', stockFileInput, feedbackMessageEl)
+                });
+                const changeFileInput = createElement('input', {
+                    type: 'file',
+                    id: 'change-file',
+                    accept: '.csv',
+                    multiple: true, // Allow multiple files
+                    onChange: () => handleFileUpload('change', changeFileInput, feedbackMessageEl)
+                });
+                const backButton = createElement('button', {
+                    onClick: () => renderLandingScreen(),
+                    className: 'back-btn'
+                }, 'Back to Main Menu');
+
+                const dataUploadContainer = createElement('div', { className: 'data-upload-container' }, [
+                    createElement('h2', {}, 'Data Upload'),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', { for: 'stock-file' }, 'Upload Stock CSV'),
+                        stockFileInput
+                    ]),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', { for: 'change-file' }, 'Upload Change CSV'),
+                        changeFileInput
+                    ]),
+                    backButton,
+                    feedbackMessageEl
+                ]);
+
+                appRoot.appendChild(dataUploadContainer);
+
+                async function handleFileUpload(type, input, feedbackEl) {
+                    const files = input.files; // files is a FileList
+                    if (!files || files.length === 0) {
+                        feedbackEl.textContent = 'Please select a file.';
+                        feedbackEl.className = 'feedback-message error';
+                        return;
+                    }
+
+                    feedbackEl.textContent = 'Processing...';
+                    feedbackEl.className = 'feedback-message'; // Neutral, not success or error yet
+                    let resultsData = [];
+                    let allOverallSuccess = true;
+
+                    for (const file of files) { // Iterate through the FileList
+                        try {
+                            const text = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = event => resolve(event.target.result);
+                                reader.onerror = error => reject(error); // Pass the error object
+                                reader.readAsText(file);
+                            });
+
+                            // Clean rows: split by newline, trim each row string, then parse. Filter out completely empty rows.
+                            const data = text.split('\n')
+                                .map(rowString => parseCSVRow(rowString.trim()))
+                                .filter(parsedRow => parsedRow.length > 0 && parsedRow.some(cell => cell.trim() !== ''));
+
+                            if (data.length === 0) { // Handle empty or effectively empty files
+                                resultsData.push({
+                                    fileName: file.name,
+                                    fileTimestamp: 'N/A',
+                                    processingStatus: 'No data found in file or file is empty.',
+                                    success: false 
+                                });
+                                allOverallSuccess = false;
+                                continue; // Move to the next file
+                            }
+
+                            let result; // To store result from Ingest functions
+                            
+                            if (type === 'stock') {
+                                // Stock input is single, so this loop runs once for stock.
+                                result = await IngestStock(data);
+                            } else if (type === 'change') {
+                                result = await IngestChange(data, file.name); // IngestChange processes one file's data
+                            } else {
+                                result = { success: false, message: 'Unknown upload type.', timestamp: null };
+                            }
+
+                            if (result) {
+                                resultsData.push({
+                                    fileName: file.name,
+                                    fileTimestamp: result.timestamp || 'N/A',
+                                    processingStatus: result.message,
+                                    success: result.success
+                                });
+                                if (!result.success) allOverallSuccess = false;
+                            } else {
+                                // Fallback if Ingest function somehow doesn't return a result object
+                                resultsData.push({
+                                    fileName: file.name,
+                                    fileTimestamp: 'N/A',
+                                    processingStatus: 'Processing function did not return a valid result.',
+                                    success: false
+                                });
+                                allOverallSuccess = false;
+                            }
+
+                        } catch (error) {
+                             resultsData.push({
+                                fileName: file.name,
+                                fileTimestamp: 'N/A',
+                                processingStatus: `Error reading or processing file: ${error.message || error}`,
+                                success: false
+                            });
+                            allOverallSuccess = false;
+                            console.error(`File processing error for ${file.name}:`, error);
+                        }
+                    }
+
+                    // If change files were processed, send the consolidated data to the server
+                    if (type === 'change') {
+                        feedbackEl.textContent = 'Finalizing change data and sending to server...';
+                        feedbackEl.className = 'feedback-message';
+                        try {
+                            // Send consolidated All_Change data
+                            const allChangeCSV = await getObjectStoreDataAsCSV("All_Change");
+                            if (allChangeCSV) {
+                                await sendDataToServer('All_Change.csv', allChangeCSV);
+                                console.log("Consolidated All_Change.csv sent to server after all change files processed.");
+                            } else {
+                                console.log("No consolidated All_Change data to send after processing change files.");
+                            }
+
+                            // Send consolidated Auto_Dict data (updated by change files)
+                            const autoDictCSV = await getObjectStoreDataAsCSV("Auto_Dict");
+                            if (autoDictCSV) {
+                                await sendDataToServer('Auto_Dict.csv', autoDictCSV);
+                                console.log("Consolidated Auto_Dict.csv sent to server after all change files processed.");
+                            } else {
+                                console.log("No consolidated Auto_Dict data to send after processing change files.");
+                            }
+                        } catch (e) {
+                            console.warn("Error sending consolidated data to server after change file processing:", e);
+                            // Update feedbackEl here if needed, or rely on the overlay for detailed errors
+                            resultsData.push({ fileName: 'Server Sync (Post-Change)', fileTimestamp: 'N/A', processingStatus: `Failed to send data to server: ${e.message}`, success: false });
+                            allOverallSuccess = false; // Mark overall as not fully successful
+                        }
+                    }
+
+                    if (resultsData.length > 0) {
+                        displayResultsOverlay(resultsData);
+                        feedbackEl.textContent = `Processed ${resultsData.length} file(s). See overlay for details.`;
+                    } else if (files.length > 0) {
+                        feedbackEl.textContent = 'Selected files contained no processable data or encountered errors early.';
+                    } else {
+                        // This case is handled by the initial check: if (!files || files.length === 0)
+                        // feedbackEl would have already been set.
+                    }
+                    feedbackEl.className = `feedback-message ${allOverallSuccess ? 'success' : (resultsData.length > 0 ? 'error' : '')}`;
+                    input.value = ''; // Clear the file input to allow re-uploading the same file(s)
+                }
+            }
+
+            function displayResultsOverlay(resultsData) {
+                const existingOverlay = document.getElementById('results-upload-overlay');
+                if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+
+                const overlay = createElement('div', { id: 'results-upload-overlay', className: 'results-overlay' });
+                const modalContent = createElement('div', { className: 'results-modal-content' });
+                const closeButton = createElement('span', { className: 'results-close-btn', onClick: () => overlay.remove() }, '×');
+                const title = createElement('h3', { style: { marginTop: '0', color: 'var(--primary-color)' } }, 'File Processing Results');
+
+                const table = createElement('table', { className: 'results-table' });
+                const tHead = createElement('thead');
+                const headerRow = createElement('tr', {}, ['Filename', 'File Timestamp', 'Status Message'].map(text => createElement('th', {}, text)));
+                tHead.appendChild(headerRow);
+                table.appendChild(tHead);
+
+                const tBody = createElement('tbody');
+                resultsData.forEach(result => {
+                    const row = createElement('tr');
+                    row.appendChild(createElement('td', {}, result.fileName));
+                    row.appendChild(createElement('td', {}, result.fileTimestamp || 'N/A'));
+                    const statusCell = createElement('td', { className: result.success ? 'status-success' : 'status-error' }, result.processingStatus);
+                    row.appendChild(statusCell);
+                    tBody.appendChild(row);
+                });
+                table.appendChild(tBody);
+
+                modalContent.appendChild(closeButton);
+                modalContent.appendChild(title);
+                modalContent.appendChild(table);
+                overlay.appendChild(modalContent);
+                document.body.appendChild(overlay);
+            }
+
+            function parseCSVRow(row) {
+                let columns = [];
+                let currentColumn = '';
+                let insideQuotes = false;
+
+                for (let i = 0; i < row.length; i++) {
+                    let char = row[i];
+                    if (char === '"') {
+                        insideQuotes = !insideQuotes;
+                    } else if (char === ',' && !insideQuotes) {
+                        columns.push(currentColumn.trim());
+                        currentColumn = '';
+                    } else {
+                        currentColumn += char;
+                    }
+                }
+                columns.push(currentColumn.trim());
+                return columns;
+            }
+
+            function renderStoreSetupScreen() {
+                clearElement(appRoot);
+                const feedbackMessageEl = createElement('p', { className: 'feedback-message' });
+
+                initIndexedDB().then(async currentDbInstance => { // Renamed to avoid conflict with module-scoped db
+                    // Use currentDbInstance for operations within this function if needed, or rely on the module-scoped db
+                    const storeMappings = await new Promise((resolve, reject) => {
+                        const transaction = db.transaction(["All_Stores"], "readonly");
+                        const store = transaction.objectStore("All_Stores");
+                        const request = store.getAll();
+                        request.onsuccess = (event) => resolve(event.target.result);
+                        request.onerror = (event) => reject("Error fetching store mappings: " + event.target.errorCode);
+                    });
+
+                    const storeListEl = createElement('div', {}, storeMappings.map((store) => {
+                    const storeEl = createElement('div', { style: { marginBottom: '10px' } }, [
+                        createElement('span', {}, `${store.name} - ${store.acronym}`),
+                        createElement('button', {
+                            onClick: () => {
+                                deleteStoreMapping(store.name); // db is now module-scoped
+                            }
+                        }, 'Delete')
+                    ]);
+                    return storeEl;
+                }));
+
+                const storeNameInput = createElement('input', { type: 'text', placeholder: 'Store Name' });
+                const acronymInput = createElement('input', { type: 'text', placeholder: 'Acronym' });
+                const addButton = createElement('button', {
+                    onClick: () => {
+                        const storeName = storeNameInput.value.trim();
+                        const acronym = acronymInput.value.trim().toUpperCase();
+                        if (storeName && acronym) {
+                            if (storeMappings.some(s => s.name === storeName)) {
+                                feedbackMessageEl.textContent = 'Store name already exists.';
+                                feedbackMessageEl.className = 'feedback-message error';
+                            } else if (storeMappings.some(s => s.acronym === acronym)) {
+                                feedbackMessageEl.textContent = 'Acronym already exists.';
+                                feedbackMessageEl.className = 'feedback-message error';
+                            } else {
+                                addStoreMapping(storeName, acronym); // db is now module-scoped
+                                storeNameInput.value = '';
+                                acronymInput.value = '';
+                                renderStoreSetupScreen();
+                            }
+                        } else {
+                            alert('Please enter both store name and acronym.');
+                        }
+                    }
+                }, 'Add Store');
+                const backButton = createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn' }, 'Back');
+
+                const container = createElement('div', { className: 'container' }, [
+                    createElement('h2', {}, 'Set up Stores'),
+                    storeListEl,
+                    createElement('div', { className: 'form-group' }, [
+                        storeNameInput,
+                        acronymInput,
+                        addButton
+                    ]),
+                    backButton,
+                    feedbackMessageEl
+                ]);
+
+                appRoot.appendChild(container);
+                }).catch(error => {
+                    console.error('Error setting up stores:', error);
+                    feedbackMessageEl.textContent = 'Error loading store data.';
+                    feedbackMessageEl.className = 'feedback-message error';
+                    appRoot.appendChild(createElement('div', { className: 'container' }, [
+                        createElement('h2', {}, 'Set up Stores'),
+                        feedbackMessageEl,
+                        createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn' }, 'Back')
+                    ]));
+                });
+            }
+
+            async function addStoreMapping(name, acronym) {
+                const currentDb = await initIndexedDB(); // Ensure DB is available
+                const transaction = currentDb.transaction(["All_Stores"], "readwrite");
+                const objectStore = transaction.objectStore("All_Stores");
+                await new Promise((resolve, reject) => {
+                    const request = objectStore.add({ name, acronym });
+                    request.onsuccess = resolve;
+                    request.onerror = reject;
+                });
+            }
+
+            async function deleteStoreMapping(name) {
+                const currentDb = await initIndexedDB(); // Ensure DB is available
+                const transaction = currentDb.transaction(["All_Stores"], "readwrite");
+                const objectStore = transaction.objectStore("All_Stores");
+                await new Promise((resolve, reject) => {
+                    const request = objectStore.delete(name);
+                    request.onsuccess = () => renderStoreSetupScreen(); // Re-render after deletion
+                    request.onerror = reject;
+                });
+            }
+
+            async function getObjectStoreInfo(dbInstance, storeName) {
+                return new Promise((resolve, reject) => {
+                    let transaction;
+                    try {
+                        transaction = dbInstance.transaction([storeName], "readonly");
+                    } catch (e) {
+                        console.error(`Failed to start transaction for ${storeName}: ${e.message}`);
+                        reject(new Error(`Failed to start transaction for ${storeName}: ${e.message}`));
+                        return;
+                    }
+                    
+                    const store = transaction.objectStore(storeName);
+                    
+                    let keyPathDisplay = "N/A";
+                    if (store.keyPath) {
+                        if (Array.isArray(store.keyPath)) {
+                            keyPathDisplay = store.keyPath.join(', ');
+                        } else {
+                            keyPathDisplay = String(store.keyPath); // Ensure it's a string
+                        }
+                    } else if (store.autoIncrement) {
+                        keyPathDisplay = "autoIncrement";
+                    }
+
+                    let itemCount = 0;
+                    let headers = [];
+
+                    const countRequest = store.count();
+
+                    countRequest.onerror = (event) => {
+                        console.error(`Error counting items in ${storeName}:`, event.target.error);
+                        itemCount = -1; // Indicate error in counting
+                    };
+
+                    countRequest.onsuccess = (event) => {
+                        itemCount = event.target.result;
+                        if (itemCount > 0) {
+                            const cursorRequest = store.openCursor();
+                            cursorRequest.onerror = (event) => {
+                                console.error(`Error opening cursor for ${storeName}:`, event.target.error);
+                                headers = ["Error reading headers"];
+                            };
+                            cursorRequest.onsuccess = (event) => {
+                                const cursor = event.target.result;
+                                if (cursor && cursor.value) {
+                                    try {
+                                        headers = Object.keys(cursor.value);
+                                    } catch (e) {
+                                        console.warn(`Could not get keys from first item in ${storeName}`, e);
+                                        headers = ["Error: Could not parse headers"];
+                                    }
+                                }
+                            };
+                        }
+                    };
+                    
+                    transaction.oncomplete = () => {
+                        if (itemCount === -1) itemCount = "Error"; 
+                         resolve({ name: storeName, keyPath: keyPathDisplay, itemCount, headers });
+                    };
+
+                    transaction.onerror = (event) => {
+                        console.error(`Transaction error for ${storeName} in getObjectStoreInfo:`, event.target.error);
+                        reject(new Error(`Transaction error for ${storeName}: ${event.target.error?.name || 'Unknown error'}`));
+                    };
+                });
+            }
+
+            function downloadStoreData(dbInstance, storeName) {
+                const transaction = dbInstance.transaction([storeName], "readonly");
+                const store = transaction.objectStore(storeName);
+                const getAllRequest = store.getAll();
+
+                getAllRequest.onsuccess = function(event) {
+                    const data = event.target.result;
+                    if (!data || data.length === 0) {
+                        alert(`Store "${storeName}" is empty or data could not be retrieved. Nothing to download.`);
+                        return;
+                    }
+                    const csv = convertToCSV(data);
+                    downloadCSV(csv, `${storeName}.csv`);
+                };
+                getAllRequest.onerror = function(event) {
+                    alert(`Error retrieving data for ${storeName}: ${event.target.error?.message || event.target.error}`);
+                };
+            }
+
+            async function renderDownloadDatabaseScreen() {
+                clearElement(appRoot);
+                const container = createElement('div', { className: 'container' });
+                appRoot.appendChild(container);
+
+                container.appendChild(createElement('h2', {}, 'Download Database Tables'));
+
+                try {
+                    await initIndexedDB(); // Ensures module-scoped 'db' is initialized
+                    if (!db || !db.objectStoreNames) {
+                        alert('Database not available or not initialized correctly.');
+                        container.appendChild(createElement('p', { style: { color: 'red' } }, 'Error: Database not available.'));
+                        const backButton = createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn', style: { marginTop: '20px' } }, 'Back');
+                        container.appendChild(backButton);
+                        return;
+                    }
+
+                    const objectStoreNames = Array.from(db.objectStoreNames);
+
+                    if (objectStoreNames.length === 0) {
+                        container.appendChild(createElement('p', {}, 'No data stores found in the database.'));
+                    } else {
+                        const table = createElement('table', { className: 'results-table', style: { marginTop: '20px' } });
+                        const tHead = createElement('thead');
+                        const headerRowElement = createElement('tr', {},
+                            ['Store Name', 'Item Count', 'Key Path', 'Headers', 'Action'].map(text => createElement('th', {}, text))
+                        );
+                        tHead.appendChild(headerRowElement);
+                        table.appendChild(tHead);
+                        const tBody = createElement('tbody');
+                        table.appendChild(tBody);
+                        container.appendChild(table);
+
+                        for (const storeName of objectStoreNames) {
+                            try {
+                                const info = await getObjectStoreInfo(db, storeName);
+                                const row = createElement('tr');
+                                row.appendChild(createElement('td', {}, info.name));
+                                row.appendChild(createElement('td', { style: { textAlign: 'right' } }, info.itemCount));
+                                row.appendChild(createElement('td', {}, info.keyPath));
+
+                                const headersCellContent = Array.isArray(info.headers) && info.headers.length > 0 ? 
+                                                           info.headers.join(', ') : 
+                                                           (typeof info.itemCount === 'number' && info.itemCount > 0 ? 'No distinct headers' : 'N/A');
+                                const headersCell = createElement('td', { 
+                                    style: { maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } 
+                                }, headersCellContent);
+                                if (Array.isArray(info.headers) && info.headers.length > 0) {
+                                    headersCell.title = info.headers.join(', ');
+                                }
+                                row.appendChild(headersCell);
+
+                                const downloadBtn = createElement('button', {
+                                    onClick: () => downloadStoreData(db, info.name),
+                                    style: { fontSize: '0.9em', padding: '5px 10px' }
+                                }, 'Download');
+                                const actionCell = createElement('td');
+                                actionCell.appendChild(downloadBtn);
+                                row.appendChild(actionCell);
+                                tBody.appendChild(row);
+                            } catch (error) {
+                                console.error(`Error fetching info for ${storeName}:`, error);
+                                const row = createElement('tr');
+                                const errorCell = createElement('td', { colSpan: 5 }, `Error loading data for ${storeName}: ${error.message || error}`);
+                                errorCell.style.color = 'red';
+                                row.appendChild(errorCell);
+                                tBody.appendChild(row);
+                            }
+                        }
+                    }
+
+                    const backButton = createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn', style: { marginTop: '20px' } }, 'Back');
+                    container.appendChild(backButton);
+
+                } catch (error) {
+                    console.error('Error initializing database for download screen:', error);
+                    container.innerHTML = ''; // Clear previous content
+                    container.appendChild(createElement('h2', {}, 'Download Database Tables'));
+                    container.appendChild(createElement('p', { style: { color: 'red' } }, 'Error opening database: ' + (error.message || error)));
+                    const backButton = createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn', style: { marginTop: '20px' } }, 'Back');
+                    container.appendChild(backButton);
+                }
+            }
+
+            function convertToCSV(data) {
+                if (data.length === 0) return '';
+                const headers = Object.keys(data[0]);
+                const csvRows = [
+                    headers.join(','),
+                    ...data.map(row => headers.map(field => JSON.stringify(row[field] || '')).join(','))
+                ];
+                return csvRows.join('\n');
+            }
+
+            function downloadCSV(csv, filename) {
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function renderDashboardScreen() {
+                clearElement(appRoot);
+                const tabs = ['All Time', 'Yearly', 'Quarterly', 'Monthly'];
+                const tabButtons = tabs.map(tab => createElement('button', {
+                    onClick: () => alert(`${tab} dashboard not yet implemented`),
+                    style: { margin: '5px' }
+                }, tab));
+
+                const categorySelect = createElement('select', {}, [
+                    createElement('option', { value: '' }, 'All Categories'),
+                    createElement('option', { value: 'cat1' }, 'Category 1')
+                ]);
+                const productSelect = createElement('select', {}, [
+                    createElement('option', { value: '' }, 'All Products'),
+                    createElement('option', { value: 'prod1' }, 'Product 1')
+                ]);
+                const variantSelect = createElement('select', {}, [
+                    createElement('option', { value: '' }, 'All Variants'),
+                    createElement('option', { value: 'var1' }, 'Variant 1')
+                ]);
+
+                const container = createElement('div', { className: 'container' }, [
+                    createElement('h2', {}, 'Dashboard'),
+                    createElement('div', {}, tabButtons),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', {}, 'Category'),
+                        categorySelect
+                    ]),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', {}, 'Product'),
+                        productSelect
+                    ]),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', {}, 'Variant'),
+                        variantSelect
+                    ]),
+                    createElement('p', {}, 'Dashboard placeholder - Select a tab to view trends.'),
+                    createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn' }, 'Back')
+                ]);
+                appRoot.appendChild(container);
+            }
+
+            async function generateCategoriesReportData(progressCallback = () => {}) {
+                progressCallback("Initializing: Populating integrated data for Categories Report...");
+                const WHO_ACRONYM = "WHO";
+                await populateIntegratedData(progressCallback); // Pass the callback along
+
+                const currentDb = await initIndexedDB();
+                const transaction = currentDb.transaction(["Integrated_data", "Auto_Dict", "All_Stores", "All_Stock"], "readonly");
+                const integratedDataStore = transaction.objectStore("Integrated_data");
+                const autoDictStore = transaction.objectStore("Auto_Dict");
+                const allStoresStore = transaction.objectStore("All_Stores");
+                const allStockStore = transaction.objectStore("All_Stock");
+
+                progressCallback("Fetching data: Loading sales, product, and store information...");
+                const integratedData = await new Promise(resolve => integratedDataStore.getAll().onsuccess = e => resolve(e.target.result));
+                const autoDictItems = await new Promise(resolve => autoDictStore.getAll().onsuccess = e => resolve(e.target.result));
+                const stores = await new Promise(resolve => allStoresStore.getAll().onsuccess = e => resolve(e.target.result));
+                
+                progressCallback("Fetching data: Loading all stock data for global stock calculation...");
+                const allStockData = await new Promise(resolve => allStockStore.getAll().onsuccess = e => resolve(e.target.result));
+
+                // Create latestStockMap for global product stock calculation
+                const latestStockMap = {}; // item_id -> { location -> { pieces, date_obj, timestamp_str } }
+                for (const stockEntry of allStockData) {
+                    if (stockEntry.timestamp && stockEntry.timestamp !== "INVALID_DATE" && stockEntry.item_id && stockEntry.piecesInStorage !== undefined) {
+                        const [month, day, year] = stockEntry.timestamp.split('/').map(Number);
+                        const date_obj = new Date(year, month - 1, day);
+                        if (isNaN(date_obj.getTime())) continue;
+                        latestStockMap[stockEntry.item_id] = latestStockMap[stockEntry.item_id] || {};
+                        if (!latestStockMap[stockEntry.item_id][stockEntry.location] || date_obj > latestStockMap[stockEntry.item_id][stockEntry.location].date_obj) {
+                            latestStockMap[stockEntry.item_id][stockEntry.location] = { pieces: stockEntry.piecesInStorage || 0, date_obj: date_obj, timestamp_str: stockEntry.timestamp };
+                        }
+                    }
+                }
+
+                const storeAcronyms = stores.filter(s => s.acronym !== WHO_ACRONYM).map(s => s.acronym);
+                
+                // Store product metadata (category, product name)
+                const productMetadata = {}; // item_id -> { category, product, variant, presentationAmount }
+                autoDictItems.forEach(item => {
+                    productMetadata[item.item_id] = { category: item.category, product: item.product, variant: item.variant, presentationAmount: item.presentationAmount };
+                });
+
+                // Calculate global stock for each product (sum of all its variants across all locations)
+                const productLevelGlobalStock = {}; // productKey (category|product) -> totalStock
+                autoDictItems.forEach(item => {
+                    const productKey = `${item.category}|${item.product}`;
+                    productLevelGlobalStock[productKey] = productLevelGlobalStock[productKey] || 0;
+                    if (latestStockMap[item.item_id]) {
+                        Object.values(latestStockMap[item.item_id]).forEach(locData => {
+                            productLevelGlobalStock[productKey] += locData.pieces;
+                        });
+                    }
+                });
+
+                // Calculate productLevelStoreStock (sum of variants' stock per store for a product)
+                const productLevelStoreStock = {}; // productKey (cat|prod) -> { storeAcronym -> totalStock }
+                autoDictItems.forEach(item_variant => { // Iterate through all variants (from autoDictItems)
+                    const productKey = `${item_variant.category}|${item_variant.product}`;
+                    productLevelStoreStock[productKey] = productLevelStoreStock[productKey] || {};
+                    storeAcronyms.forEach(acronym => {
+                        productLevelStoreStock[productKey][acronym] = productLevelStoreStock[productKey][acronym] || 0;
+                        const variantStockAtStore = latestStockMap[item_variant.item_id]?.[acronym]?.pieces || 0;
+                        productLevelStoreStock[productKey][acronym] += variantStockAtStore;
+                    });
+                });
+
+                // Calculate productLevelWhoStock (sum of variants' WHO stock for a product)
+                const productLevelWhoStock = {}; // productKey (cat|prod) -> totalWhoStock
+                autoDictItems.forEach(item_variant => {
+                    const productKey = `${item_variant.category}|${item_variant.product}`;
+                    productLevelWhoStock[productKey] = productLevelWhoStock[productKey] || 0;
+                    const variantWhoStock = latestStockMap[item_variant.item_id]?.[WHO_ACRONYM]?.pieces || 0;
+                    productLevelWhoStock[productKey] += variantWhoStock;
+                });
+                progressCallback("Processing: Aggregating sales data by item, week, and location...");
+                // Aggregate sales data by item_id, week, and location
+                const itemWeeklySales = {}; // item_id -> { week_start_date: { non_who_total_sales_pieces: 0, who_sales_pieces: 0, store_sales: { store_acronym: sales_pieces } } }
+                const allWeeks = new Set();
+
+                integratedData.forEach(d => {
+                    if (!productMetadata[d.item_id]) return; 
+                    allWeeks.add(d.week_start_date);
+                    const salesAmount = Math.abs(d.total_sales_pieces || 0); // total_sales_pieces from integratedData is per item/week/location
+
+                    itemWeeklySales[d.item_id] = itemWeeklySales[d.item_id] || {};
+                    itemWeeklySales[d.item_id][d.week_start_date] = itemWeeklySales[d.item_id][d.week_start_date] || { 
+                        non_who_total_sales_pieces: 0, 
+                        who_sales_pieces: 0, 
+                        store_sales: {} 
+                    };
+                    
+                    if (d.location === WHO_ACRONYM) {
+                        itemWeeklySales[d.item_id][d.week_start_date].who_sales_pieces += salesAmount;
+                    } else if (storeAcronyms.includes(d.location)) { // Non-WHO store
+                        itemWeeklySales[d.item_id][d.week_start_date].non_who_total_sales_pieces += salesAmount;
+                        itemWeeklySales[d.item_id][d.week_start_date].store_sales[d.location] = (itemWeeklySales[d.item_id][d.week_start_date].store_sales[d.location] || 0) + salesAmount;
+                    }
+                });
+                
+                const sortedWeeks = Array.from(allWeeks).sort((a, b) => new Date(a) - new Date(b));
+
+                // --- Process data by category and product ---
+                progressCallback("Calculating: Computing 6-week averages and current week sales...");
+                const categoryData = {}; 
+                // categoryName -> { 
+                //   products: { productKey -> productRow }, 
+                //   weeklyNonWHOSalesSums: {}, weeklyWHOSalesSums: {},
+                //   totalNonWHO6WAvg: 0, totalNonWHOCurrentWeekSales: 0, 
+                //   totalWHOSales6WAvg: 0, totalWHOCurrentWeekSales: 0,
+                //   totalWHOStockSum: 0, totalGlobalProductStockSum: 0,
+                //   store6WAvgSums: {}, storeCurrentWeekSalesSums: {},
+                //   totalStoreProductStockSums: {} // For category subtotal of store stocks
+                // }
+
+                // Iterate through unique products identified from autoDictItems
+                const uniqueProducts = {}; // productKey -> { category, product }
+                autoDictItems.forEach(item_variant => {
+                    const productKey = `${item_variant.category}|${item_variant.product}`;
+                    if (!uniqueProducts[productKey]) {
+                        uniqueProducts[productKey] = { category: item_variant.category, product: item_variant.product };
+                    }
+                });
+
+                for (const productKey in uniqueProducts) {
+                    const { category, product } = uniqueProducts[productKey];
+
+                    categoryData[category] = categoryData[category] || {
+                        products: {}, // Using an object for products for easier aggregation by productKey
+                        weeklySalesSums: {},
+                        weeklyNonWHOSalesSums: {},
+                        weeklyWHOSalesSums: {},
+                        totalNonWHO6WAvg: 0,
+                        totalNonWHOCurrentWeekSales: 0,
+                        totalWHOSales6WAvg: 0,
+                        totalWHOCurrentWeekSales: 0,
+                        totalWHOStockSum: 0,
+                        totalGlobalProductStockSum: 0,
+                        store6WAvgSums: {}, storeCurrentWeekSalesSums: {},
+                        totalStoreProductStockSums: {} // Initialize new subtotal map
+                    };
+                    
+                    const cat = categoryData[category];
+
+                    // Aggregate sales for this productKey from all its variants
+                    let aggProductNonWHOSalesHistory = sortedWeeks.map(() => 0);
+                    let aggProductWHOSalesHistory = sortedWeeks.map(() => 0);
+                    let aggProductStoreSalesHistory = {}; // storeAcronym -> sortedWeeks.map(() => 0)
+                    storeAcronyms.forEach(acronym => {
+                        aggProductStoreSalesHistory[acronym] = sortedWeeks.map(() => 0);
+                    });
+
+                    autoDictItems.forEach(item_variant => {
+                        if (`${item_variant.category}|${item_variant.product}` === productKey) {
+                            // This item_variant belongs to the current productKey
+                            sortedWeeks.forEach((week, weekIdx) => {
+                                aggProductNonWHOSalesHistory[weekIdx] += (itemWeeklySales[item_variant.item_id]?.[week]?.non_who_total_sales_pieces || 0);
+                                aggProductWHOSalesHistory[weekIdx] += (itemWeeklySales[item_variant.item_id]?.[week]?.who_sales_pieces || 0);
+                                storeAcronyms.forEach(acronym => {
+                                    aggProductStoreSalesHistory[acronym][weekIdx] += (itemWeeklySales[item_variant.item_id]?.[week]?.store_sales?.[acronym] || 0);
+                                });
+                            });
+                        }
+                    });
+
+                    cat.products[productKey] = {
+                        category: category,
+                        product: product,
+                        nonWHOSalesHistory: aggProductNonWHOSalesHistory,
+                        whoSalesHistory: aggProductWHOSalesHistory,
+                        storeSalesHistory: aggProductStoreSalesHistory,
+                        globalProductStock: productLevelGlobalStock[productKey] || 0,
+                        whoStock: productLevelWhoStock[productKey] || 0, // Product-level WHO stock
+                        storeProductStock: productLevelStoreStock[productKey] || {} // Product-level stock per store
+                    };
+                }
+
+
+                // Calculate 6W averages and current week sales for products and aggregate for categories
+                Object.values(categoryData).forEach(cat => {
+                    Object.values(cat.products).forEach(pData => {
+                        // Non-WHO Global Metrics
+                        const last6WeeksNonWHOGlobal = pData.nonWHOSalesHistory.slice(-6);
+                        pData.avg6wNonWHOGlobal = calculateAverage(last6WeeksNonWHOGlobal);
+                        pData.currentWeekNonWHOGlobalSales = pData.nonWHOSalesHistory.length > 0 ? pData.nonWHOSalesHistory[pData.nonWHOSalesHistory.length - 1] : 0;
+                        pData.changePctNonWHOGlobal = calculateChangePercent(pData.currentWeekNonWHOGlobalSales, pData.avg6wNonWHOGlobal);
+
+                        cat.totalNonWHO6WAvg += pData.avg6wNonWHOGlobal;
+                        cat.totalNonWHOCurrentWeekSales += pData.currentWeekNonWHOGlobalSales;
+                        cat.totalGlobalProductStockSum += pData.globalProductStock; // Accumulate for subtotal
+                        
+                        // WHO Metrics
+                        const last6WeeksWHO = pData.whoSalesHistory.slice(-6);
+                        pData.avg6wWHO = calculateAverage(last6WeeksWHO);
+                        pData.currentWeekWHOSales = pData.whoSalesHistory.length > 0 ? pData.whoSalesHistory[pData.whoSalesHistory.length - 1] : 0;
+                        pData.changePctWHO = calculateChangePercent(pData.currentWeekWHOSales, pData.avg6wWHO);
+                        cat.totalWHOSales6WAvg += pData.avg6wWHO; // Sum of product-level WHO sales averages
+                        cat.totalWHOCurrentWeekSales += pData.currentWeekWHOSales;
+                        cat.totalWHOStockSum += pData.whoStock;
+
+                        pData.storeMetrics = {};
+                        storeAcronyms.forEach(acronym => {
+                            const storeSalesHist = pData.storeSalesHistory[acronym];
+                            const last6WeeksStore = storeSalesHist.slice(-6);
+                            const avg6wStore = calculateAverage(last6WeeksStore);
+                            const currentWeekStore = storeSalesHist.length > 0 ? storeSalesHist[storeSalesHist.length - 1] : 0;
+                            pData.storeMetrics[acronym] = {
+                                avg6w: avg6wStore,
+                                changePct: calculateChangePercent(currentWeekStore, avg6wStore)
+                            };
+                            cat.store6WAvgSums[acronym] = (cat.store6WAvgSums[acronym] || 0) + avg6wStore;
+                            cat.storeCurrentWeekSalesSums[acronym] = (cat.storeCurrentWeekSalesSums[acronym] || 0) + currentWeekStore;
+                            // Accumulate for category subtotal of store stocks
+                            cat.totalStoreProductStockSums[acronym] = (cat.totalStoreProductStockSums[acronym] || 0) + (pData.storeProductStock[acronym] || 0);
+                        });
+                        
+                        sortedWeeks.forEach((week, idx) => {
+                            cat.weeklyNonWHOSalesSums[week] = (cat.weeklyNonWHOSalesSums[week] || 0) + pData.nonWHOSalesHistory[idx];
+                            cat.weeklyWHOSalesSums[week] = (cat.weeklyWHOSalesSums[week] || 0) + pData.whoSalesHistory[idx];
+                        });
+                    });
+                });
+
+                // --- Prepare final output rows ---
+                progressCallback("Formatting: Preparing report rows for Excel...");
+                const outputRows = [];
+                // Define new spacer keys
+                const spacerKeyAfterWeeks = 'spacer_after_weeks';
+                const spacerKeyAfterStores = 'spacer_after_stores';
+                const spacerKeyAfterWHO = 'spacer_after_who';
+
+                const excelHeaders = ['Category', 'Product'];
+                excelHeaders.push({ header: '', key: 'spacer_after_product', width: 3 }); // New empty column after Product
+                sortedWeeks.forEach(week => excelHeaders.push(week));
+                excelHeaders.push({ header: '', key: spacerKeyAfterWeeks, width: 3 }); // Spacer 1
+
+                // Store-specific (non-WHO)
+                storeAcronyms.forEach(acronym => {
+                    excelHeaders.push(`${acronym} 6W Avg Sales`);
+                    excelHeaders.push(`${acronym} Change %`);
+                    excelHeaders.push(`${acronym} Stock`); // New column
+                });
+                if (storeAcronyms.length > 0) {
+                    excelHeaders.push({ header: '', key: spacerKeyAfterStores, width: 3 }); // Spacer 2
+                }
+
+                excelHeaders.push('WHO Stock'); // WHO Data
+                excelHeaders.push({ header: '', key: spacerKeyAfterWHO, width: 3 }); // Spacer after WHO Stock
+                
+                excelHeaders.push('Global 6W Avg Sales', '% of Category Sales', 'Global Change %'); // Non-WHO based
+                excelHeaders.push('Global Product Stock'); // Add header for overall stock
+
+                const sortedCategories = Object.keys(categoryData).sort();
+
+                sortedCategories.forEach(categoryName => {
+                    const cat = categoryData[categoryName];
+                    const sortedProducts = Object.values(cat.products).sort((a,b) => a.product.localeCompare(b.product));
+
+                    sortedProducts.forEach(pData => {
+                        const row = { 'Category': pData.category, 'Product': pData.product };
+                        sortedWeeks.forEach((week, idx) => row[week] = Math.round(pData.nonWHOSalesHistory[idx])); // Non-WHO weekly sales
+                        row[spacerKeyAfterWeeks] = ''; 
+
+                        // Store-specific metrics
+                        storeAcronyms.forEach(acronym => {
+                            const metrics = pData.storeMetrics[acronym];
+                            row[`${acronym} 6W Avg Sales`] = Math.round(metrics.avg6w);
+                            const storeChangePctValue = metrics.changePct;
+                            if (storeChangePctValue === Infinity) row[`${acronym} Change %`] = "Inf";
+                            else if (storeChangePctValue === -Infinity) row[`${acronym} Change %`] = "-Inf";
+                            else if (isNaN(storeChangePctValue)) row[`${acronym} Change %`] = "N/A";
+                            else row[`${acronym} Change %`] = Math.round(storeChangePctValue);
+                            row[`${acronym} Stock`] = Math.round(pData.storeProductStock[acronym] || 0); // New data
+                        });
+                        if (storeAcronyms.length > 0) {
+                            row[spacerKeyAfterStores] = '';
+                        }
+                        
+                        const pctOfCatSales = cat.totalNonWHO6WAvg !== 0 ? (pData.avg6wNonWHOGlobal / cat.totalNonWHO6WAvg * 100) : 0;
+                        if (isNaN(pctOfCatSales)) {
+                            row['% of Category Sales'] = "N/A";
+                        } else {
+                            row['% of Category Sales'] = Math.round(pctOfCatSales);
+                        }
+                        
+                        row['WHO Stock'] = Math.round(pData.whoStock);
+                        row[spacerKeyAfterWHO] = ''; 
+
+                        row['Global 6W Avg Sales'] = Math.round(pData.avg6wNonWHOGlobal);
+                        const globalChangePctValue = pData.changePctNonWHOGlobal;
+                        if (globalChangePctValue === Infinity) row['Global Change %'] = "Inf";
+                        else if (globalChangePctValue === -Infinity) row['Global Change %'] = "-Inf";
+                        else if (isNaN(globalChangePctValue)) row['Global Change %'] = "N/A";
+                        else row['Global Change %'] = Math.round(globalChangePctValue);
+
+                        // Overall Global Product Stock
+                        row['Global Product Stock'] = Math.round(pData.globalProductStock);
+
+                        outputRows.push(row);
+                    });
+
+                    // Add Subtotal Row
+                    const subtotalRow = { 'Category': `${categoryName} - Subtotal`, 'Product': '' };
+                    sortedWeeks.forEach(week => subtotalRow[week] = Math.round(cat.weeklyNonWHOSalesSums[week] || 0)); // Non-WHO weekly sales sums
+                    subtotalRow[spacerKeyAfterWeeks] = '';
+
+                    // Store subtotals
+                    storeAcronyms.forEach(acronym => {
+                        const avg = cat.store6WAvgSums[acronym] || 0;
+                        const current = cat.storeCurrentWeekSalesSums[acronym] || 0;
+                        const change = calculateChangePercent(current, avg);
+                        subtotalRow[`${acronym} 6W Avg Sales`] = Math.round(avg);
+                        if (change === Infinity) subtotalRow[`${acronym} Change %`] = "Inf";
+                        else if (change === -Infinity) subtotalRow[`${acronym} Change %`] = "-Inf";
+                        else if (isNaN(change)) subtotalRow[`${acronym} Change %`] = "N/A";
+                        else subtotalRow[`${acronym} Change %`] = Math.round(change);
+                        subtotalRow[`${acronym} Stock`] = Math.round(cat.totalStoreProductStockSums[acronym] || 0); // New subtotal data
+                    });
+                    if (storeAcronyms.length > 0) {
+                        subtotalRow[spacerKeyAfterStores] = '';
+                    }
+
+                    subtotalRow['WHO Stock'] = Math.round(cat.totalWHOStockSum);
+                    subtotalRow[spacerKeyAfterWHO] = '';
+
+                    subtotalRow['Global 6W Avg Sales'] = Math.round(cat.totalNonWHO6WAvg);
+                    subtotalRow['% of Category Sales'] = ''; // Or 100.00 if preferred
+                    const catGlobalChangePct = calculateChangePercent(cat.totalNonWHOCurrentWeekSales, cat.totalNonWHO6WAvg);
+                    if (catGlobalChangePct === Infinity) subtotalRow['Global Change %'] = "Inf";
+                    else if (catGlobalChangePct === -Infinity) subtotalRow['Global Change %'] = "-Inf";
+                    else if (isNaN(catGlobalChangePct)) subtotalRow['Global Change %'] = "N/A";
+                    else subtotalRow['Global Change %'] = Math.round(catGlobalChangePct);
+                    subtotalRow['Global Product Stock'] = Math.round(cat.totalGlobalProductStockSum);
+                    outputRows.push(subtotalRow);
+                    // outputRows.push({}); // Removed empty line
+                });
+
+                return { rows: outputRows, headers: excelHeaders, sortedWeeks };
+            }
+
+            async function renderCategoriesReportScreen() {
+                clearElement(appRoot);
+                const feedbackMessageEl = createElement('p', { className: 'feedback-message' });
+                const generateButton = createElement('button', {
+                    onClick: async () => {
+                        showProgressOverlay('Starting Categories Report generation...');
+                        try {
+                            const progressUpdater = (message) => updateProgressOverlay(message);
+                            const success = await generateAndDownloadExcelCategoriesReport(progressUpdater);
+                            
+                            if (success) {
+                                feedbackMessageEl.textContent = 'Excel report generated and download started.';
+                                feedbackMessageEl.className = 'feedback-message success';
+                            } else {
+                                // Error message might be set by generateAndDownloadExcelCategoriesReport if it returns false due to no data
+                                if (!feedbackMessageEl.textContent || feedbackMessageEl.className.includes('success')) {
+                                   feedbackMessageEl.textContent = 'No data available to generate the report or an issue occurred.';
+                                }
+                                feedbackMessageEl.className = 'feedback-message error';
+                            }
+                        } catch (error) {
+                            console.error("Error generating categories report:", error);
+                            feedbackMessageEl.textContent = `Error generating report: ${error.message}`;
+                            feedbackMessageEl.className = 'feedback-message error';
+                        } finally {
+                            hideProgressOverlay();
+                        }
+                    }
+                }, 'Generate & Download Categories Report');
+
+                const container = createElement('div', { className: 'container' }, [
+                    createElement('h2', {}, 'Categories Report'),
+                    generateButton,
+                    feedbackMessageEl,
+                    createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn' }, 'Back')
+                ]);
+                appRoot.appendChild(container);
+            }
+
+            async function generateAndDownloadExcelCategoriesReport(progressCallback = () => {}) {
+                progressCallback("Preparing data for Categories Report...");
+                const { rows, headers, sortedWeeks } = await generateCategoriesReportData(progressCallback); 
+
+                if (!rows || rows.length === 0) {
+                    console.log("No data to generate Excel report.");
+                    progressCallback("No data available to generate report."); // Update overlay
+                    return false;
+                }
+
+ // Send report data to server
+                try {
+                    const reportDataCSV = convertToCSV(rows);
+                    if (reportDataCSV) {
+                        await sendDataToServer('Categories_Report.csv', reportDataCSV);
+                    }
+                } catch (e) {
+                    console.warn("Failed to prepare or send Categories Report data to server:", e);
+                }
+
+                progressCallback("Generating Excel: Creating worksheet and applying styles...");
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('Categories Report');
+
+                // Define spacer keys locally for use in this function's logic
+                const spacerKeyAfterWeeks = 'spacer_after_weeks';
+                const spacerKeyAfterStores = 'spacer_after_stores';
+                const spacerKeyAfterWHO = 'spacer_after_who';
+
+                const faintBorder = { style: 'thin', color: { argb: 'FFDCDCDC' } }; // Gainsboro
+                const mediumBorder = { style: 'medium' }; // Excel's default medium black
+
+                // Define column headers and widths
+                worksheet.columns = headers.map(h_config => {
+                    progressCallback("Generating Excel: Defining column headers...");
+                    let colDefinition = {};
+                    let originalWidth;
+
+                    if (typeof h_config === 'string') {
+                        if (h_config === 'Category') originalWidth = 30;
+                        else if (h_config === 'Product') originalWidth = 40;
+                        else if (/^\d{2}\/\d{2}\/\d{4}$/.test(h_config)) originalWidth = 5; // Week dates
+                        else if (h_config === 'Global Product Stock') originalWidth = 12; // Specific case for its previous width
+                        else if (h_config.includes('Avg Sales') || h_config === '% of Category Sales' || h_config.endsWith('Change %') || h_config.endsWith('Stock')) {
+                            originalWidth = 10;
+                        } else { // Default for other string headers (e.g. store specific ones if not caught above)
+                            originalWidth = 10; // Default for other string headers
+                        }
+
+                        let finalWidth = originalWidth; // Initialize finalWidth with originalWidth
+                        const isDateColumn = /^\d{2}\/\d{2}\/\d{4}$/.test(h_config);
+                        // Reduce if not Category, Product, or Date (i.e., it's non-date number data)
+                        if (h_config !== 'Category' && h_config !== 'Product' && !isDateColumn) {
+                            finalWidth = Math.round(originalWidth * 0.7);
+                        }
+                        colDefinition = { header: h_config, key: h_config, width: finalWidth };
+
+                    } else if (h_config && typeof h_config === 'object' && h_config.key) {
+                        // This handles object-based headers like spacers
+                        // Spacers are not "data" columns, so their width is fixed and not reduced.
+                        let spacerWidth = h_config.width || 3; // Default spacer width
+                        colDefinition = { header: h_config.header || '', key: h_config.key, width: spacerWidth };
+                    } else {
+                        // Fallback for any unexpected header configuration
+                        console.warn("Unexpected header configuration in generateAndDownloadExcelCategoriesReport:", h_config);
+                        originalWidth = 10; // Default original width for unknown
+                        colDefinition = { header: 'Unknown', key: 'unknownKey_' + Math.random().toString(36).substring(7), width: Math.round(originalWidth * 0.7) }; // Assume it's data and reduce
+                    }
+                    return colDefinition;
+                });
+
+                // Style Header Row
+                // --- START: Calculate week column indices for border styling ---
+                const weekColumnKeys = sortedWeeks; // These are the keys/headers for week columns
+                const weekColumnWorksheetIndices = []; // Will store 1-based column numbers
+                worksheet.columns.forEach((col, index) => {
+                    // col.key is set to h_config if h_config is a string, or h_config.key if h_config is an object.
+                    // Week headers are strings (dates).
+                    if (typeof col.key === 'string' && weekColumnKeys.includes(col.key)) {
+                        weekColumnWorksheetIndices.push(index + 1); // 1-based index for colNumber
+                    }
+                });
+                // --- END: Calculate week column indices ---
+
+                let colNumSpacerAfterWeeks = -1;
+                let colNumSpacerAfterStores = -1;
+                let colNumSpacerAfterWHO = -1;
+
+                worksheet.columns.forEach((col, index) => {
+                    if (col.key === spacerKeyAfterWeeks) {
+                        colNumSpacerAfterWeeks = index + 1; // 1-based
+                    }
+                    if (col.key === spacerKeyAfterStores) {
+                        colNumSpacerAfterStores = index + 1; // 1-based
+                    }
+                    if (col.key === spacerKeyAfterWHO) {
+                        colNumSpacerAfterWHO = index + 1; // 1-based
+                    }
+                });
+
+                const headerRow = worksheet.getRow(1);
+                progressCallback("Generating Excel: Styling header row...");
+                headerRow.height = 98; // Increased height for the first row (75 * 1.3)
+                headerRow.eachCell((cell, colNumber) => {
+                    let fillColor = 'FF4F81BD'; // Default blue for first block (Category, Product, Weeks)
+                    const currentColDef = worksheet.columns[colNumber - 1];
+                    const prevColDef = colNumber > 1 ? worksheet.columns[colNumber - 2] : null;
+                    const nextColDef = colNumber < worksheet.columns.length ? worksheet.columns[colNumber] : null;
+
+                    cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center', textRotation: 90 };
+
+                    if (currentColDef.key && currentColDef.key.startsWith('spacer_')) { // Is a spacer column
+                        fillColor = 'FFFFFFFF'; // White for spacer headers
+                        // cell.value is already empty from colDefinition for spacer
+                        cell.alignment = { vertical: 'middle', horizontal: 'center' }; // No text rotation
+                        cell.font = {}; // Default font
+                    } else if (colNumSpacerAfterWeeks !== -1 && colNumber > colNumSpacerAfterWeeks && // After first main spacer
+                               (colNumSpacerAfterStores === -1 || colNumber < colNumSpacerAfterStores)) { // Before second main spacer (if it exists)
+                        // Block 2: Store metrics (if colNumSpacerAfterStores exists) OR WHO metrics (if no stores)
+                        fillColor = 'FF00008B'; // Deeper dark blue
+                    } else if (colNumSpacerAfterStores !== -1 && colNumber > colNumSpacerAfterStores &&
+                               (colNumSpacerAfterWHO === -1 || colNumber < colNumSpacerAfterWHO)) {
+                        // Block 3: WHO metrics (if colNumSpacerAfterWHO exists)
+                        fillColor = 'FF00008B'; // Deeper dark blue
+                    } else if (colNumSpacerAfterWHO !== -1 && colNumber > colNumSpacerAfterWHO) {
+                        // Block 4: Global metrics
+                        fillColor = 'FF00008B'; // Deeper dark blue
+                    } else if (colNumSpacerAfterWeeks === -1 && colNumSpacerAfterStores === -1 && colNumSpacerAfterWHO === -1 && colNumber > 2) {
+                        // Fallback if no spacers somehow, color data columns differently
+                        // This case should ideally not be hit with current logic
+                    }
+
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+
+                    let L = faintBorder, R = faintBorder, T = mediumBorder, B = mediumBorder;
+
+                    if (colNumber === 1) L = mediumBorder;
+                    // If previous column was a spacer OR a 4-week separator week column
+                    if (prevColDef && ( (prevColDef.key && prevColDef.key.startsWith('spacer_')) || (weekColumnWorksheetIndices.includes(colNumber - 1) && (weekColumnWorksheetIndices.indexOf(colNumber - 1)) % 4 === 3))) {
+                        L = mediumBorder;
+                    }
+
+                    if (colNumber === worksheet.columns.length) R = mediumBorder;
+                    // If next column is a spacer
+                    if (nextColDef && (nextColDef.key && nextColDef.key.startsWith('spacer_'))) R = mediumBorder;
+
+                    const isWeekColumnHeader = weekColumnWorksheetIndices.includes(cell.col);
+                    if (isWeekColumnHeader) {
+                        const relativeWeekIndex = weekColumnWorksheetIndices.indexOf(cell.col) + 1;
+                        // If current week column is a 4-week separator (and not the very last week column of all weeks)
+                        if (relativeWeekIndex % 4 === 0 && cell.col !== weekColumnWorksheetIndices[weekColumnWorksheetIndices.length - 1]) {
+                            R = mediumBorder;
+                        }
+                    }
+
+                    if (currentColDef.key && currentColDef.key.startsWith('spacer_')) { // Current cell is a spacer
+                        L = mediumBorder; R = mediumBorder; // Spacers are separators
+                        // Fill, font, alignment already handled for spacers
+                    }
+
+                    cell.border = {
+                        top: T, left: L, bottom: B, right: R
+                    };
+                });
+                // Add data rows
+                progressCallback("Generating Excel: Adding data rows...");
+                worksheet.addRows(rows);
+
+                progressCallback("Generating Excel: Styling data cells...");
+                // Style data cells
+                const salesColumnIndices = [];
+                const changePctColumnIndices = [];
+                const pctOfCatSalesColumnIndices = [];
+                const avgSalesColumnIndices = [];
+                const stockColumnIndices = [];
+
+                headers.forEach((h, index) => {
+                    const headerText = (typeof h === 'string') ? h : h.header;
+                    if (headerText && /^\d{2}\/\d{2}\/\d{4}$/.test(headerText)) { // Week date columns
+                        // These are non-WHO sales weeks
+                        salesColumnIndices.push(index + 1);
+                    }
+                    else if (headerText && headerText.endsWith('Change %')) changePctColumnIndices.push(index + 1);
+                    else if (headerText === '% of Category Sales') pctOfCatSalesColumnIndices.push(index + 1);
+                    else if (headerText.includes('Avg Sales')) avgSalesColumnIndices.push(index + 1);
+                });
+                worksheet.columns.forEach((col, index) => { if (col.key && col.key.endsWith('Stock')) stockColumnIndices.push(index + 1); });
+
+                const fillLightGrey = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+                const fillWhite = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }; // Or no fill
+                const greenFont = { color: { argb: 'FF008000' } }; // Green
+                const redFont = { color: { argb: 'FFFF0000' } };   // Red
+
+                let originalRowIndex = 0;
+                worksheet.eachRow({ includeEmpty: true }, (excelRow, rowNumberInSheet) => {
+                    if (rowNumberInSheet === 1) return; // Skip header styling, already done
+
+                    const originalRowData = rows[originalRowIndex];
+                    // originalRowIndex is incremented at the end of this callback
+
+                    if (originalRowData) { // Check if there's corresponding data in our `rows` array
+                        if (originalRowData.Product === '' && typeof originalRowData.Category === 'string' && originalRowData.Category.endsWith(' - Subtotal')) { // Subtotal row
+                            excelRow.font = { bold: true };
+
+                            excelRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFB3' } }; // Very pale yellow highlight
+                                
+                                let L_sub = faintBorder, R_sub = faintBorder, T_sub = faintBorder, B_sub = mediumBorder;
+                                const currentColDefSub = worksheet.columns[colNumber - 1];
+                                const prevColDefSub = colNumber > 1 ? worksheet.columns[colNumber - 2] : null;
+                                const nextColDefSub = colNumber < worksheet.columns.length ? worksheet.columns[colNumber] : null;
+                                
+                                if (colNumber === 1) L_sub = mediumBorder;
+                                if (prevColDefSub && ( (prevColDefSub.key && prevColDefSub.key.startsWith('spacer_')) || (weekColumnWorksheetIndices.includes(colNumber - 1) && (weekColumnWorksheetIndices.indexOf(colNumber - 1)) % 4 === 3))) {
+                                     L_sub = mediumBorder;
+                                }
+                                if (colNumber === worksheet.columns.length) R_sub = mediumBorder;
+                                if (nextColDefSub && (nextColDefSub.key && nextColDefSub.key.startsWith('spacer_')) ) R_sub = mediumBorder;
+
+                                const isWeekColumnForSubtotal = weekColumnWorksheetIndices.includes(colNumber);
+                                if (isWeekColumnForSubtotal) {
+                                    const relativeWeekIndex = weekColumnWorksheetIndices.indexOf(colNumber) + 1;
+                                    if (relativeWeekIndex % 4 === 0 && colNumber !== weekColumnWorksheetIndices[weekColumnWorksheetIndices.length - 1]) {
+                                        R_sub = mediumBorder;
+                                    }
+                                }
+
+                                if (currentColDefSub.key && currentColDefSub.key.startsWith('spacer_')) {
+                                    L_sub = mediumBorder; R_sub = mediumBorder;
+                                }
+                                cell.border = { top: T_sub, left: L_sub, bottom: B_sub, right: R_sub };
+                                
+                                const headerConfig = worksheet.columns[colNumber - 1];
+                                if (headerConfig && (headerConfig.key === 'Category' || headerConfig.key === 'Product')) {
+                                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                                } else if (headerConfig.key === '% of Category Sales' && (cell.value === '' || cell.value === null)) {
+                                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                                } else if (typeof cell.value === 'number' || (headerConfig.key && (headerConfig.key.includes('Avg Sales') || /^\d{2}\/\d{2}\/\d{4}$/.test(headerConfig.key) || headerConfig.key.endsWith('Change %') || headerConfig.key.endsWith('Stock')))) {
+                                    cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                                } else {
+                                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                                }
+                            });
+                        } else {
+                            // Regular data row styling
+                            excelRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                                const currentColDefData = worksheet.columns[colNumber - 1];
+                                const prevColDefData = colNumber > 1 ? worksheet.columns[colNumber - 2] : null;
+                                const nextColDefData = colNumber < worksheet.columns.length ? worksheet.columns[colNumber] : null;
+
+                                if (currentColDefData.key && currentColDefData.key.startsWith('spacer_')) {
+                                    cell.value = ''; 
+                                    cell.fill = fillWhite; 
+                                    cell.border = { top: faintBorder, left: mediumBorder, bottom: faintBorder, right: mediumBorder };
+                                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                                    return; // Skip other styling for spacer cell
+                                }
+
+                                // Default fill: White
+                                cell.fill = fillWhite;
+
+                                // 1. Intercalated column shading (light grey)
+                                // Applies to week columns (which are before the spacer)
+                                if (colNumber > 2 && (colNumSpacerAfterWeeks === -1 || colNumber < colNumSpacerAfterWeeks)) {
+                                    // If colNumber is odd (e.g., 3rd, 5th column overall, which are 1st, 3rd week col)
+                                    if (colNumber % 2 !== 0) { 
+                                        cell.fill = fillLightGrey;
+                                    }
+                                }
+
+                                // Specific styling for "6W Avg Sales" columns (overrides intercalated fill)
+                                if (avgSalesColumnIndices.includes(colNumber) || stockColumnIndices.includes(colNumber)) { // Includes WHO Stock and Global Product Stock
+                                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFAFEEEE' } }; // Pale Turquoise
+                                    if (typeof cell.value === 'number') cell.numFmt = '#,##0'; // Integer format
+                                }
+
+                                // Number formats for weekly sales
+                                if (salesColumnIndices.includes(colNumber)) { // Weekly sales data
+                                    if (typeof cell.value === 'number') cell.numFmt = '#,##0'; // Integer format
+                                }
+
+                                if (currentColDefData.key === 'Global Product Stock') { // Already handled by avgSalesColumnIndices for fill and format
+                                    // Additional specific styling if needed
+                                }
+
+                                // Percentage format for '% of Category Sales'
+                                if (pctOfCatSalesColumnIndices.includes(colNumber)) {
+                                    if (typeof cell.value === 'number') cell.numFmt = '0"%"'; // Integer percentage
+                                }
+
+                                // Percentage format and conditional font colors for 'Change %' columns
+                                if (changePctColumnIndices.includes(colNumber)) { // Includes Global Change % and WHO Change % and store Change %
+                                    const value = cell.value;
+                                    if (typeof value === 'number') {
+                                        cell.numFmt = '0"%"'; // Integer percentage
+                                        if (value > 0) cell.font = greenFont;
+                                        else if (value < 0) cell.font = redFont;
+                                    }
+                                }
+
+                                // Alignment
+                                if (colNumber <= 2) { // Category & Product columns
+                                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                                } else { // Data columns
+                                    cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                                }
+
+                                let L_data = faintBorder, R_data = faintBorder, T_data = faintBorder, B_data = faintBorder;
+
+                                if (colNumber === 1) L_data = mediumBorder;
+                                if (prevColDefData && ( (prevColDefData.key && prevColDefData.key.startsWith('spacer_')) || (weekColumnWorksheetIndices.includes(colNumber - 1) && (weekColumnWorksheetIndices.indexOf(colNumber - 1)) % 4 === 3))) {
+                                    L_data = mediumBorder;
+                                }
+
+                                if (colNumber === worksheet.columns.length) R_data = mediumBorder;
+                                if (nextColDefData && (nextColDefData.key && nextColDefData.key.startsWith('spacer_')) ) R_data = mediumBorder;
+                                
+                                const isWeekColumnForData = weekColumnWorksheetIndices.includes(colNumber);
+                                if (isWeekColumnForData) {
+                                    const relativeWeekIndex = weekColumnWorksheetIndices.indexOf(colNumber) + 1;
+                                    if (relativeWeekIndex % 4 === 0 && colNumber !== weekColumnWorksheetIndices[weekColumnWorksheetIndices.length - 1]) {
+                                        R_data = mediumBorder;
+                                    }
+                                }
+                                // Spacer styling is handled at the top of this 'else' block for data rows
+
+                                cell.border = {
+                                    top: T_data, left: L_data,
+                                    bottom: B_data, right: R_data
+                                };
+                            });
+                        }
+                    }
+                    originalRowIndex++;
+                });
+
+                // Freeze the first row and first two columns
+                worksheet.views = [{
+                    state: 'frozen',
+                    xSplit: 2, // Freeze 2 columns
+                    ySplit: 1, // Freeze 1 row
+                    topLeftCell: 'C2',
+                    activeCell: 'A1',
+                    zoomScale: 85 // Set zoom to 85%
+                }];
+
+                // Apply auto-filter to the entire data range (A1 to last column, last row)
+                // If there are rows, it covers all data; if only header, it covers header.
+                worksheet.autoFilter = `A1:${worksheet.getColumn(worksheet.columns.length).letter}${worksheet.rowCount > 0 ? worksheet.rowCount : 1}`;
+
+                progressCallback("Finalizing: Preparing file for download...");
+                // Write to file and trigger download
+                try {
+                    const buffer = await workbook.xlsx.writeBuffer();
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    // Standard blob download
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'Categories_Report.xlsx';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href); // Clean up
+                    return true;
+                } catch (err) {
+                    console.error('Error writing Excel file:', err);
+                    // Make sure feedbackMessageEl is accessible or pass it / update globally
+                    // For now, an alert:
+                    alert('Error generating Excel file: ' + err.message);
+                    return false;
+                }
+            }
+
+            async function generateWHOReportData(progressCallback = () => {}) {
+                progressCallback("Initializing: Populating integrated data for WHO Report...");
+                await populateIntegratedData(progressCallback);
+                
+                const currentDb = await initIndexedDB();
+                const transaction = currentDb.transaction(["Integrated_data", "Auto_Dict", "All_Stores", "All_Stock"], "readonly");
+                const integratedDataStore = transaction.objectStore("Integrated_data");
+                const autoDictStore = transaction.objectStore("Auto_Dict");
+                const allStoresStore = transaction.objectStore("All_Stores");
+                const allStockStore = transaction.objectStore("All_Stock");
+                
+                progressCallback("Fetching data: Loading stock, sales, product, and store information...");
+                const autoDictItems = await new Promise(resolve => autoDictStore.getAll().onsuccess = e => resolve(e.target.result));
+                const stores = await new Promise(resolve => allStoresStore.getAll().onsuccess = e => resolve(e.target.result));
+                const integratedData = await new Promise(resolve => integratedDataStore.getAll().onsuccess = e => resolve(e.target.result));
+                const allStockData = await new Promise(resolve => allStockStore.getAll().onsuccess = e => resolve(e.target.result));
+                
+                const storeAcronyms = stores.filter(s => s.acronym !== 'WHO').map(s => s.acronym);
+                
+                // 1. Process `allStockData` for latest stock for each item/location
+                progressCallback("Processing: Analyzing latest stock levels...");
+                const latestStockMap = {}; // item_id -> { location -> { pieces, date_obj, timestamp_str } }
+                for (const stockEntry of allStockData) {
+                    if (stockEntry.timestamp && stockEntry.timestamp !== "INVALID_DATE" && stockEntry.item_id) {
+                        try {
+                            const [month, day, year] = stockEntry.timestamp.split('/').map(Number);
+                            const date_obj = new Date(year, month - 1, day);
+                            if (isNaN(date_obj.getTime())) continue;
+
+                            latestStockMap[stockEntry.item_id] = latestStockMap[stockEntry.item_id] || {};
+                            if (!latestStockMap[stockEntry.item_id][stockEntry.location] || date_obj > latestStockMap[stockEntry.item_id][stockEntry.location].date_obj) {
+                                latestStockMap[stockEntry.item_id][stockEntry.location] = {
+                                    pieces: stockEntry.piecesInStorage || 0,
+                                    date_obj: date_obj,
+                                    timestamp_str: stockEntry.timestamp
+                                };
+                            }
+                        } catch (e) {
+                            console.warn(`Skipping stock entry due to invalid date: ${stockEntry.timestamp}`, stockEntry);
+                        }
+                    }
+                }
+
+                // 2. Process `integratedData` for sales history
+                progressCallback("Processing: Aggregating sales history...");
+                const itemSalesDetails = {}; // item_id -> { sales_by_week_location: { week_date -> { location_acronym -> sales_pieces } }, global_sales_by_week: { week_date -> total_sales_pieces_excluding_WHO } }
+                const allSalesWeeksSet = new Set();
+                integratedData.forEach(d => {
+                    if (!d.item_id || d.week_start_date === "INVALID_DATE") return;
+                    allSalesWeeksSet.add(d.week_start_date);
+                    
+                    itemSalesDetails[d.item_id] = itemSalesDetails[d.item_id] || { sales_by_week_location: {}, global_sales_by_week: {} };
+                    itemSalesDetails[d.item_id].sales_by_week_location[d.week_start_date] = itemSalesDetails[d.item_id].sales_by_week_location[d.week_start_date] || {};
+                    itemSalesDetails[d.item_id].sales_by_week_location[d.week_start_date][d.location] = (itemSalesDetails[d.item_id].sales_by_week_location[d.week_start_date][d.location] || 0) + (d.total_sales_pieces || 0);
+
+                    if (d.location !== 'WHO') {
+                        itemSalesDetails[d.item_id].global_sales_by_week[d.week_start_date] = (itemSalesDetails[d.item_id].global_sales_by_week[d.week_start_date] || 0) + (d.total_sales_pieces || 0);
+                    }
+                });
+
+                const sortedSalesWeeks = Array.from(allSalesWeeksSet).sort((a, b) => new Date(a) - new Date(b));
+                const last12SalesWeeks = sortedSalesWeeks.slice(-12);
+                const current6SalesWeeks = sortedSalesWeeks.slice(-6); // For current 6W Avg and Pareto
+                const prior6SalesWeeks = sortedSalesWeeks.slice(-12, -6); // For prior 6W Avg
+
+                // 3. Prepare data for Pareto analysis
+                progressCallback("Calculating: Performing Pareto analysis (Top 20% products, Top 80% sales)...");
+                let itemsForPareto = autoDictItems.map(meta => {
+                    let totalGlobalSalesLast6Weeks = 0;
+                    if (itemSalesDetails[meta.item_id]?.global_sales_by_week) {
+                        current6SalesWeeks.forEach(week => {
+                            totalGlobalSalesLast6Weeks += (itemSalesDetails[meta.item_id].global_sales_by_week[week] || 0);
+                        });
+                    }
+                    return {
+                        item_id: meta.item_id,
+                        total_sales_for_pareto: totalGlobalSalesLast6Weeks
+                    };
+                });
+
+                // 4. Pareto Calculations
+                itemsForPareto.sort((a, b) => b.total_sales_for_pareto - a.total_sales_for_pareto);
+                const grandTotalSalesForPareto = itemsForPareto.reduce((sum, item) => sum + item.total_sales_for_pareto, 0);
+                const itemsWithSalesForPareto = itemsForPareto.filter(item => item.total_sales_for_pareto > 0);
+                const countForTop20Pct = Math.ceil(0.20 * itemsWithSalesForPareto.length);
+
+                const paretoFlags = {}; // item_id -> { is_top_20_product, contributes_to_top_80_sales }
+                let cumulativeSalesForPareto = 0;
+                itemsWithSalesForPareto.forEach((item, index) => {
+                    paretoFlags[item.item_id] = { is_top_20_product: false, contributes_to_top_80_sales: false };
+                    paretoFlags[item.item_id].is_top_20_product = index < countForTop20Pct;
+                    if (grandTotalSalesForPareto > 0 && (cumulativeSalesForPareto / grandTotalSalesForPareto) < 0.80) {
+                        paretoFlags[item.item_id].contributes_to_top_80_sales = true;
+                    }
+                    cumulativeSalesForPareto += item.total_sales_for_pareto;
+                });
+
+                // 5. Build final outputRows
+                progressCallback("Formatting: Preparing report rows for Excel...");
+                const outputRows = [];
+                const excelHeaders = ['Category', 'Product', 'Variant'];
+                // Weekly sales data headers
+                last12SalesWeeks.forEach(week => excelHeaders.push(week)); // Changed: Removed "Global Sales " prefix
+                
+                storeAcronyms.forEach(acronym => {
+                    excelHeaders.push(`${acronym} Curr 6W Avg`);
+                    excelHeaders.push(`${acronym} Prior 6W Avg`);
+                    excelHeaders.push(`${acronym} Change %`);
+                    excelHeaders.push(`${acronym} Stock`);
+                    excelHeaders.push(`${acronym} Low Stock`);
+                    excelHeaders.push(`${acronym} Suggest Purch`);
+                });
+
+                excelHeaders.push('WHO Stock');
+                excelHeaders.push('Sum of Stores 6W Avg'); // New column
+                excelHeaders.push('Total Store Suggest Purch'); // New column
+                excelHeaders.push('WHO Stock vs Store Demand (2Wk)'); // New column
+                excelHeaders.push('Is Top 20% Product', 'Contributes to Top 80% Sales');
+
+                // Rebuild excelHeaders with spacers
+                const finalExcelHeaders = ['Category', 'Product', 'Variant', 'Presentation Amount'];
+                last12SalesWeeks.forEach(week => finalExcelHeaders.push(week));
+                finalExcelHeaders.push({ header: '', key: 'spacer_after_weeks', width: 3 });
+
+                storeAcronyms.forEach((acronym, index) => {
+                    finalExcelHeaders.push(`${acronym} Curr 6W Avg`, `${acronym} Prior 6W Avg`, `${acronym} Change %`, `${acronym} Stock`, `${acronym} Low Stock`, `${acronym} Suggest Purch`);
+                    if (index < storeAcronyms.length - 1) {
+                        finalExcelHeaders.push({ header: '', key: `spacer_after_store_${acronym}`, width: 3 });
+                    }
+                });
+            if (storeAcronyms.length > 0) { // Spacer after all store blocks, before WHO/Global metrics
+                    finalExcelHeaders.push({ header: '', key: 'spacer_after_all_stores', width: 3 });
+                }
+                finalExcelHeaders.push('WHO Stock', 'Sum of Stores 6W Avg', 'Total Store Suggest Purch', 'WHO Stock vs Store Demand (2Wk)');
+            finalExcelHeaders.push('Active Tag'); // New column
+                finalExcelHeaders.push({ header: '', key: 'spacer_before_pareto', width: 3 });
+                finalExcelHeaders.push('Is Top 20% Product', 'Contributes to Top 80% Sales');
+
+                for (const item of autoDictItems) { // Iterate all items from Auto_Dict to ensure all are listed
+                    const meta = item;
+                    const currentItemSalesDetails = itemSalesDetails[meta.item_id] || { sales_by_week_location: {}, global_sales_by_week: {} };
+                    
+                    const currentParetoFlags = paretoFlags[meta.item_id] || { is_top_20_product: false, contributes_to_top_80_sales: false };
+
+                    const row = {
+                        'Category': meta.category,
+                        'Product': meta.product,
+                        'Variant': meta.variant,
+                        'Presentation Amount': meta.presentationAmount || 1,
+                    };
+
+                    last12SalesWeeks.forEach(week => { // Changed: Key is now just the week
+                        row[week] = currentItemSalesDetails.global_sales_by_week?.[week] || 0;
+                    });
+
+                    let totalSuggestedPurchaseForAllStores = 0;
+                    let sumOfStores6WAvg = 0;
+
+                    storeAcronyms.forEach(acronym => {
+                        const storeSalesHistoryForWeekFn = week => currentItemSalesDetails.sales_by_week_location?.[week]?.[acronym] || 0;
+                        
+                        const current6WStoreSalesData = current6SalesWeeks.map(storeSalesHistoryForWeekFn);
+                        const prior6WStoreSalesData = prior6SalesWeeks.map(storeSalesHistoryForWeekFn);
+
+                        const current6WAvgStore = calculateAverage(current6WStoreSalesData);
+                        const prior6WAvgStore = calculateAverage(prior6WStoreSalesData);
+                        const changePctStore = calculateChangePercent(current6WAvgStore, prior6WAvgStore);
+                        
+                        const currentStockStore = latestStockMap[meta.item_id]?.[acronym]?.pieces || 0;
+                        
+                        let weeksOfStockStore = 0;
+                        if (current6WAvgStore > 0) {
+                            weeksOfStockStore = currentStockStore / (current6WAvgStore / 6); // Avg is sum for 6 weeks
+                        } else if (currentStockStore > 0) {
+                            weeksOfStockStore = Infinity;
+                        }
+
+                        const lowStockTagStore = weeksOfStockStore < 2 && weeksOfStockStore !== Infinity; // Only true if calculable and < 2
+                        
+                        let suggestedPurchaseStore = 0;
+                        if (current6WAvgStore > 0) {
+                             // Ensure purchase suggestion is in pieces, rounded. Presentation amount not directly used here as avg is in pieces.
+                            suggestedPurchaseStore = Math.round((current6WAvgStore / 6) * 4);
+                        }
+
+                        row[`${acronym} Curr 6W Avg`] = Math.round(current6WAvgStore);
+                        row[`${acronym} Prior 6W Avg`] = Math.round(prior6WAvgStore);
+                        row[`${acronym} Change %`] = (changePctStore === Infinity) ? "Inf" : (changePctStore === -Infinity ? "-Inf" : (isNaN(changePctStore) ? "N/A" : Math.round(changePctStore)));
+                        row[`${acronym} Stock`] = currentStockStore;
+                        row[`${acronym} Low Stock`] = lowStockTagStore;
+                        row[`${acronym} Suggest Purch`] = suggestedPurchaseStore;
+                        totalSuggestedPurchaseForAllStores += suggestedPurchaseStore;
+                        sumOfStores6WAvg += current6WAvgStore;
+                    });
+
+                    row['WHO Stock'] = latestStockMap[meta.item_id]?.['WHO']?.pieces || 0;
+                    row['Sum of Stores 6W Avg'] = Math.round(sumOfStores6WAvg);
+                    row['Total Store Suggest Purch'] = totalSuggestedPurchaseForAllStores;
+
+                    // Calculate WHO Stock vs Store Demand status
+                    let whoStockVsDemandStatus = "";
+                    const currentWhoStock = row['WHO Stock'];
+
+                    if (totalSuggestedPurchaseForAllStores === 0) {
+                        whoStockVsDemandStatus = "Sufficient (No Demand)";
+                    } else {
+                        const oneWeekStoreDemand = totalSuggestedPurchaseForAllStores / 4; // totalSuggestedPurchase is for 4 weeks
+                        const sevenWeeksStoreDemandThreshold = oneWeekStoreDemand * 7;
+                        const twoWeeksStoreDemandThreshold = oneWeekStoreDemand * 2;
+
+                        if (currentWhoStock >= sevenWeeksStoreDemandThreshold) {
+                            whoStockVsDemandStatus = "Excess";
+                        } else if (currentWhoStock >= twoWeeksStoreDemandThreshold) {
+                            whoStockVsDemandStatus = "Sufficient";
+                        } else {
+                            whoStockVsDemandStatus = "Insufficient";
+                        }
+                    }
+                    row['WHO Stock vs Store Demand (2Wk)'] = whoStockVsDemandStatus;
+
+                // Calculate Active Tag
+                const sumOfStores6WAvgForTag = row['Sum of Stores 6W Avg'] || 0;
+                const whoStockForTag = row['WHO Stock'] || 0;
+                let totalStoreStockForTag = 0;
+                storeAcronyms.forEach(acronym => totalStoreStockForTag += (row[`${acronym} Stock`] || 0));
+                const isActiveTag = (sumOfStores6WAvgForTag >= 1) || (totalStoreStockForTag > 0) || (whoStockForTag > 0);
+                row['Active Tag'] = isActiveTag;
+
+                    row['Is Top 20% Product'] = currentParetoFlags.is_top_20_product;
+                    row['Contributes to Top 80% Sales'] = currentParetoFlags.contributes_to_top_80_sales;
+
+                    outputRows.push(row);
+                }
+                // Sort by Category, then Product, then Variant
+                outputRows.sort((a,b) => {
+                    if (a.Category < b.Category) return -1;
+                    if (a.Category > b.Category) return 1;
+                    if (a.Product < b.Product) return -1;
+                    if (a.Product > b.Product) return 1;
+                    if (a.Variant < b.Variant) return -1;
+                    if (a.Variant > b.Variant) return 1;
+                    return 0;
+                });
+
+                return { rows: outputRows, headers: finalExcelHeaders, last12SalesWeeks, storeAcronyms };
+            }
+
+            async function generateAndDownloadExcelWHOReport(progressCallback = () => {}) {
+                progressCallback("Preparing data for WHO Report...");
+                const { rows, headers: finalExcelHeaders, last12SalesWeeks, storeAcronyms } = await generateWHOReportData(progressCallback);
+
+                if (!rows || rows.length === 0) {
+                    console.log("No data to generate WHO Excel report.");
+                    progressCallback("No data available to generate report.");
+                    return false;
+                }
+                // Send report data to server
+                try {
+                    const reportDataCSV = convertToCSV(rows);
+                    if (reportDataCSV) {
+                        await sendDataToServer('WHO_Report.csv', reportDataCSV);
+                    }
+                } catch (e) {
+                    console.warn("Failed to prepare or send WHO Report data to server:", e);
+                }
+                progressCallback("Generating Excel: Creating WHO worksheet and applying styles...");
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('WHO Report');
+
+                const faintBorder = { style: 'thin', color: { argb: 'FFDCDCDC' } }; // Gainsboro
+                const mediumBorder = { style: 'medium' }; // Excel's default medium black
+
+
+                progressCallback("Generating Excel: Defining column headers...");
+                worksheet.columns = finalExcelHeaders.map(h_config => {
+                    let colDefinition = {};
+                    let originalWidth;
+
+                    if (typeof h_config === 'string') {
+                        // Assign original widths first
+                        if (h_config === 'Category') originalWidth = 30;
+                        else if (h_config === 'Product') originalWidth = 45;
+                        else if (h_config === 'Variant') originalWidth = 25;
+                        else if (h_config === 'Presentation Amount') originalWidth = 10;
+                        else if (last12SalesWeeks.includes(h_config)) originalWidth = 8; // Date column
+                        else if (h_config.includes('Curr 6W Avg') || h_config.includes('Prior 6W Avg')) originalWidth = 8;
+                        else if (h_config.includes('Change %')) originalWidth = 7;
+                        else if (h_config.endsWith(' Stock') && !last12SalesWeeks.includes(h_config)) originalWidth = 8; // Catches WHO Stock and store stocks
+                        else if (h_config.includes('Low Stock')) originalWidth = 7;
+                        else if (h_config === 'Total Store Suggest Purch') originalWidth = 12; // Specific case first
+                        else if (h_config.includes('Suggest Purch')) originalWidth = 8; // Generic case
+                        else if (h_config.includes('Top') || h_config.includes('Contributes')) originalWidth = 10;
+                        else if (h_config === 'WHO Stock vs Store Demand (2Wk)') originalWidth = 18;
+                        else if (h_config === 'Active Tag') originalWidth = 12; // For TRUE/FALSE
+                        else if (h_config === 'Sum of Stores 6W Avg') originalWidth = 10;
+                        else originalWidth = 12; // Default for any other string headers
+
+                        let finalWidth = originalWidth;
+                        // Apply 30% reduction if it's "non-date number data"
+                        // Exclude Category, Product, Variant, and date week columns
+                        if (h_config !== 'Category' && h_config !== 'Product' && h_config !== 'Variant' && !last12SalesWeeks.includes(h_config)) {
+                            finalWidth = Math.round(originalWidth * 0.7);
+                        }
+
+                        // Apply specific percentage increases requested by the user
+                        if (h_config === 'WHO Stock vs Store Demand (2Wk)') {
+                            finalWidth = Math.round(finalWidth * 1.3); // Increase by 30%
+                        } else if (storeAcronyms.some(acronym => h_config === `${acronym} Change %`)) {
+                            finalWidth = Math.round(finalWidth * 1.2); // Increase by 20%
+                        }
+
+                        colDefinition = { header: h_config, key: h_config, width: finalWidth };
+
+                    } else if (h_config && typeof h_config === 'object' && h_config.key && h_config.key.startsWith('spacer_')) {
+                        // Spacers - width is fixed, not data.
+                        colDefinition = { header: '', key: h_config.key, width: h_config.width || 3 };
+                    } else { // Fallback for any unexpected header configuration
+                        console.warn("Unexpected header configuration in generateAndDownloadExcelWHOReport:", h_config);
+                        originalWidth = 12; // Default original width for unknown in WHO report context
+                        colDefinition = { header: 'Unknown', key: 'unknownKey_' + Math.random().toString(36).substring(7), width: Math.round(originalWidth * 0.7) }; // Assume it's data and reduce
+                    }
+                    return colDefinition;
+                });
+                
+                // --- START: Calculate column indices for styling ---
+                const globalSalesWeekColumnKeys = [...last12SalesWeeks]; 
+                const globalSalesWeekWorksheetIndices = [];
+
+                worksheet.columns.forEach((col, index) => {
+                    const colKey = col.key;
+                    if (globalSalesWeekColumnKeys.includes(colKey)) {
+                        globalSalesWeekWorksheetIndices.push(index + 1); // 1-based
+                    }
+                });
+                const lastGlobalSalesWeekColIndex = globalSalesWeekWorksheetIndices.length > 0 ? globalSalesWeekWorksheetIndices[globalSalesWeekWorksheetIndices.length - 1] : -1;
+                // --- END: Calculate column indices ---
+
+                progressCallback("Generating Excel: Styling header row...");
+                const headerRow = worksheet.getRow(1);
+                headerRow.height = 98; // Increased height for rotated text, consistent with Categories report
+                headerRow.eachCell((cell, colNumber) => {
+                    const currentColDef = worksheet.columns[colNumber - 1];
+                    const prevColDef = colNumber > 1 ? worksheet.columns[colNumber - 2] : null;
+                    const nextColDef = colNumber < worksheet.columns.length ? worksheet.columns[colNumber] : null;
+                    const currentColKey = currentColDef.key;
+
+                    if (currentColKey && currentColKey.startsWith('spacer_')) {
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } }; // White fill
+                        cell.font = {}; // Default font
+                        cell.value = ''; // Ensure spacer header is empty
+                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    } else {
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F81BD' } }; // Blue
+                        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+                        cell.alignment = { vertical: 'middle', horizontal: 'center', textRotation: 90 };
+                    }
+                    
+                    let L = faintBorder, R = faintBorder, T = mediumBorder, B = mediumBorder;
+
+                    if (colNumber === 1) L = mediumBorder;
+                    if (prevColDef && (prevColDef.key.startsWith('spacer_') || (globalSalesWeekWorksheetIndices.includes(colNumber - 1) && (globalSalesWeekWorksheetIndices.indexOf(colNumber - 1) + 1) % 4 === 0))) {
+                        L = mediumBorder;
+                    }
+
+                    if (colNumber === worksheet.columns.length) R = mediumBorder;
+                    if (nextColDef && nextColDef.key.startsWith('spacer_')) R = mediumBorder;
+
+                    const isGlobalSalesWeekColHeader = globalSalesWeekWorksheetIndices.includes(colNumber);
+                    if (isGlobalSalesWeekColHeader) {
+                        const relativeWeekIndex = globalSalesWeekWorksheetIndices.indexOf(colNumber); // 0-indexed
+                        if ((relativeWeekIndex + 1) % 4 === 0 && colNumber !== lastGlobalSalesWeekColIndex) {
+                            R = mediumBorder;
+                        }
+                    }
+
+                    if (currentColKey && currentColKey.startsWith('spacer_')) {
+                        L = mediumBorder; R = mediumBorder;
+                    }
+
+                    cell.border = {
+                        top: T, left: L, bottom: B, right: R
+                    };
+                });
+
+
+                progressCallback("Generating Excel: Adding data rows...");
+                worksheet.addRows(rows);
+
+                progressCallback("Generating Excel: Styling data cells...");
+                worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+                    if (rowNumber === 1) return; // Skip header
+
+                    const fillLightGrey = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+                    const fillWhite = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+                    const paleTurquoiseFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFAFEEEE' } };
+
+                    row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                        // Default fill
+                        cell.fill = fillWhite;
+                        
+                        const currentColDefData = worksheet.columns[colNumber - 1];
+                        const prevColDefData = colNumber > 1 ? worksheet.columns[colNumber - 2] : null;
+                        const nextColDefData = colNumber < worksheet.columns.length ? worksheet.columns[colNumber] : null;
+                        const headerKey = currentColDefData.key;
+
+                        const isGlobalSalesWeekDataCol = globalSalesWeekWorksheetIndices.includes(colNumber);
+
+                        if (headerKey && headerKey.startsWith('spacer_')) {
+                            cell.value = '';
+                            cell.fill = fillWhite;
+                            cell.border = { top: faintBorder, left: mediumBorder, bottom: faintBorder, right: mediumBorder };
+                            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                            return; // Skip other styling for spacer cell
+                        }
+                        // Intercalated shading for global sales week columns
+                        if (isGlobalSalesWeekDataCol) {
+                            const relativeWeekIndex = globalSalesWeekWorksheetIndices.indexOf(colNumber); // 0-based
+                            if (relativeWeekIndex % 2 !== 0) { // 2nd, 4th, 6th... week column (0-indexed: 1, 3, 5)
+                                cell.fill = fillLightGrey;
+                            }
+                        }
+
+                        // Pale Turquoise for Avg Sales columns
+                        if (headerKey.includes(' Curr 6W Avg') || headerKey.includes(' Prior 6W Avg')) {
+                            cell.fill = paleTurquoiseFill;
+                        }
+
+                        // Default alignment
+                        // Will be overridden by specific conditions below
+
+                        // Number formats and right alignment for numerical data
+                        if (last12SalesWeeks.includes(headerKey) || // Check if headerKey is a date string
+                            headerKey.includes(' Curr 6W Avg') ||
+                            headerKey.includes(' Prior 6W Avg') ||
+                            headerKey.endsWith(' Stock') || // Catches WHO Stock and store stocks
+                            headerKey === 'Sum of Stores 6W Avg' ||
+                            headerKey.includes(' Suggest Purch') || // Catches individual store and total
+                            headerKey === 'Total Store Suggest Purch' ||
+                            headerKey === 'Presentation Amount') {
+                            cell.numFmt = '#,##0';
+                            cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                        // Percentage formats, conditional font colors, and alignment for Change %
+                        } else if (headerKey.includes(' Change %')) {
+                            if (cell.value === "Inf" || cell.value === "N/A" || cell.value === "-Inf") {
+                                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                            } else {
+                                cell.numFmt = '0"%"';
+                                cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                                if (typeof cell.value === 'number') {
+                                    if (cell.value > 0) cell.font = { color: { argb: 'FF008000' } }; // Green
+                                    else if (cell.value < 0) cell.font = { color: { argb: 'FFFF0000' } }; // Red
+                                }
+                            }
+                        // Center alignment and conditional formatting for boolean/status strings
+                        } else if (headerKey.includes('Low Stock') || 
+                                   headerKey.startsWith('Is Top 20%') || headerKey.startsWith('Contributes to Top 80%') ||
+                                   headerKey === 'Active Tag') {
+                            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                            if (typeof cell.value === 'boolean' && cell.value === true) {
+                                if (headerKey.includes('Low Stock')) {
+                                     cell.font = { color: { argb: 'FFFF0000' }, bold: true }; // Red and bold for low stock
+                                }
+                            }
+                        } else if (headerKey === 'WHO Stock vs Store Demand (2Wk)') {
+                            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                            if (cell.value === "Insufficient") {
+                                cell.font = { color: { argb: 'FFFF0000' }, bold: true }; // Red and bold
+                                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE0E0' } }; // Light red fill
+                            } else if (cell.value === "Sufficient") {
+                                cell.font = { color: { argb: 'FF008000' } }; // Green
+                            } else if (cell.value === "Excess") {
+                                cell.font = { color: { argb: 'FFFF8C00' }, bold: true }; // Dark Orange, bold
+                            }
+                        // Left alignment for Category, Product, Variant
+                        } else if (headerKey === 'Category' || headerKey === 'Product' || headerKey === 'Variant') {
+                            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                        } else {
+                            // Fallback alignment for any other columns
+                            cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                        }
+
+                        // Specific conditional formatting
+                        if (headerKey.includes('Low Stock') && cell.value === true) {
+                            // Font color handled above.
+                        }
+                        if (headerKey.includes('Suggest Purch') && typeof cell.value === 'number' && cell.value > 0) {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }; // Yellow fill
+                        }
+
+                        // Border styling for data cells
+                        let L_data = faintBorder, R_data = faintBorder, T_data = faintBorder, B_data = faintBorder;
+
+                        if (colNumber === 1) L_data = mediumBorder;
+                        if (prevColDefData && (prevColDefData.key.startsWith('spacer_') || (globalSalesWeekWorksheetIndices.includes(colNumber - 1) && (globalSalesWeekWorksheetIndices.indexOf(colNumber - 1) + 1) % 4 === 0))) {
+                            L_data = mediumBorder;
+                        }
+
+                        if (colNumber === worksheet.columns.length) R_data = mediumBorder;
+                        if (nextColDefData && nextColDefData.key.startsWith('spacer_')) R_data = mediumBorder;
+
+                        if (isGlobalSalesWeekDataCol) {
+                            const relativeWeekIndex = globalSalesWeekWorksheetIndices.indexOf(colNumber);
+                            if ((relativeWeekIndex + 1) % 4 === 0 && colNumber !== lastGlobalSalesWeekColIndex) {
+                                R_data = mediumBorder;
+                            }
+                        }
+                        // Spacer styling handled at the top of this cell loop
+
+                        cell.border = {
+                            top: T_data, left: L_data, bottom: B_data, right: R_data
+                        };
+                    });
+                });
+
+                // Freeze first 3 columns (Category, Product, Variant) and first row (Headers)
+                worksheet.views = [{
+                    state: 'frozen',
+                    xSplit: 3, // Freeze 3 columns
+                    ySplit: 1, // Freeze 1 row
+                    topLeftCell: 'D2',
+                    activeCell: 'A1',
+                    zoomScale: 85 // Set zoom to 85%
+                }];
+                worksheet.autoFilter = `A1:${worksheet.getColumn(worksheet.columns.length).letter}1`; // Apply auto-filter to the header row
+
+                progressCallback("Finalizing: Preparing file for download...");
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'WHO_Report.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+                return true;
+            }
+
+            function renderWHOReportScreen() {
+                clearElement(appRoot);
+                const feedbackMessageEl = createElement('p', { className: 'feedback-message' });
+                const generateButton = createElement('button', {
+                    onClick: async () => {
+                        showProgressOverlay('Starting WHO Report generation...');
+                        try {
+                            const progressUpdater = (message) => updateProgressOverlay(message);
+                            const success = await generateAndDownloadExcelWHOReport(progressUpdater);
+
+                            if (success) {
+                                feedbackMessageEl.textContent = 'WHO Excel report generated and download started.';
+                                feedbackMessageEl.className = 'feedback-message success';
+                            } else {
+                                if (!feedbackMessageEl.textContent || feedbackMessageEl.className.includes('success')) {
+                                    feedbackMessageEl.textContent = 'No data available to generate the WHO report or an issue occurred.';
+                                }
+                                feedbackMessageEl.className = 'feedback-message error';
+                            }
+                        } catch (error) {
+                            console.error("Error generating WHO report:", error);
+                            feedbackMessageEl.textContent = `Error generating WHO report: ${error.message}`;
+                            feedbackMessageEl.className = 'feedback-message error';
+                        } finally {
+                            hideProgressOverlay();
+                        }
+                    }
+                }, 'Generate & Download WHO Report');
+
+                const container = createElement('div', { className: 'container' }, [
+                    createElement('h2', {}, 'WHO Report'),
+                    generateButton,
+                    feedbackMessageEl,
+                    createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn' }, 'Back')
+                ]);
+                appRoot.appendChild(container);
+            }
+
+            function renderStoresReportScreen() {
+                clearElement(appRoot);
+                const container = createElement('div', { className: 'container' }, [
+                    createElement('h2', {}, 'Stores Report'),
+                    createElement('p', {}, 'Stores report placeholder'),
+                    createElement('button', { onClick: () => renderLandingScreen(), className: 'back-btn' }, 'Back')
+                ]);
+                appRoot.appendChild(container);
+            }
+
+            // --- Progress Overlay Functions ---
+            let progressOverlayEl = null;
+            let progressMessageEl = null;
+
+            function showProgressOverlay(initialMessage) {
+                if (progressOverlayEl) { // Remove if already exists, though should not happen
+                    progressOverlayEl.remove();
+                }
+                progressMessageEl = createElement('p', {}, initialMessage);
+                const modalContent = createElement('div', { className: 'progress-modal-content' }, [
+                    // Optional: Add a spinner icon here later
+                    // createElement('i', {className: 'fas fa-spinner fa-spin', style: {fontSize: '2em', marginBottom: '15px'}}),
+                    progressMessageEl
+                ]);
+                progressOverlayEl = createElement('div', { className: 'progress-overlay' });
+                progressOverlayEl.appendChild(modalContent);
+                document.body.appendChild(progressOverlayEl);
+            }
+
+            function updateProgressOverlay(message) {
+                if (progressMessageEl) {
+                    progressMessageEl.textContent = message;
+                }
+            }
+
+            function hideProgressOverlay() {
+                if (progressOverlayEl) {
+                    progressOverlayEl.remove();
+                    progressOverlayEl = null;
+                    progressMessageEl = null;
+                }
+            }
+
+            // --- Authentication and Initialization ---
+            async function attemptSessionLogin(sessionCode) {
+                try {
+                    console.log(`Attempting session login with token: ${sessionCode}`);
+                    // POST to the base path of the current URL (without query params)
+                    const response = await fetch(window.location.origin + window.location.pathname, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ session: sessionCode, action: 'validate_session' }) // Send stored token
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.role) {
+                            currentUser = data;
+                            console.log("Session validated successfully:", currentUser);
+                            // Optionally, refresh the token if the server sends a new one
+                            if (data.session) {
+                                localStorage.setItem('userSessionToken', data.session);
+                                console.log("Session token refreshed/re-stored after validation.");
+                            }
+                            return true;
+                        } else {
+                            console.warn("Session code processed, but no valid role received. Response:", data);
+                            localStorage.removeItem('userSessionToken'); // Clear invalid token
+                            return false;
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        console.error(`Error validating session_code (${response.status}):`, errorText);
+                        localStorage.removeItem('userSessionToken'); // Clear invalid token
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("Network or other error sending session_code:", error);
+                    localStorage.removeItem('userSessionToken'); // Clear token on error
+                    return false;
+                }
+            }
+
+            async function initializeMainApplicationLogic() {
+                // This function contains the logic to run AFTER successful authentication
+                console.log("Initializing main application logic for user:", currentUser.role);
+                try {
+                    await initIndexedDB(); // Ensure DB is initialized
+                    console.log("Database initialized successfully for main app.");
+                } catch (error) {
+                    console.error("Failed to initialize database for main app:", error.message || error);
+                    clearElement(appRoot);
+                    appRoot.appendChild(createElement('div', {className: 'container'}, [
+                        createElement('h2', {style: {color: 'red'}}, 'Critical Error'),
+                        createElement('p', {}, 'Failed to initialize application database. Please try again later or contact support.'),
+                        createElement('p', {}, `Details: ${error.message || error}`)
+                    ]));
+                    return; // Stop further rendering
+                }
+                renderLandingScreen();
+            }
+
+            // --- Server Data Sync Functions ---
+            async function getObjectStoreDataAsCSV(storeName) {
+                const currentDb = await initIndexedDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = currentDb.transaction([storeName], "readonly");
+                    const store = transaction.objectStore(storeName);
+                    const request = store.getAll();
+
+                    request.onsuccess = (event) => {
+                        const data = event.target.result;
+                        if (data && data.length > 0) {
+                            resolve(convertToCSV(data));
+                        } else {
+                            resolve(""); // Resolve with empty string if no data or store is empty
+                        }
+                    };
+                    request.onerror = (event) => {
+                        console.error(`Error fetching data from ${storeName}:`, event.target.error);
+                        reject(new Error(`Error fetching data from ${storeName}: ${event.target.error?.name}`));
+                    };
+                });
+            }
+
+            async function sendDataToServer(filename, csvData) {
+                try {
+                    const payload = {
+                        action: 'save_data_source',
+                        filename: filename,
+                        data: csvData
+                    };
+                    const response = await fetch(window.location.origin + window.location.pathname, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    console.log(`Server response for ${filename} (${response.status}):`, await response.text());
+                } catch (error) {
+                    console.error(`Network or other error sending data for ${filename}:`, error);
+                }
+            }
+
+            // --- App Initialization (Entry Point) ---
+            async function initApp() {
+                console.log("version", 11, "Login management");
+                // const urlParams = new URLSearchParams(window.location.search); // No longer needed for session
+                // const sessionCode = urlParams.get('session_code'); // No longer needed
+                const storedSessionToken = localStorage.getItem('userSessionToken');
+
+                let loggedInViaSession = false;
+                if (storedSessionToken) {
+                    loggedInViaSession = await attemptSessionLogin(storedSessionToken);
+                }
+
+                if (loggedInViaSession && currentUser && currentUser.role) {
+                    await initializeMainApplicationLogic();
+                } else {
+                    if (storedSessionToken && !loggedInViaSession) {
+                        console.log("Stored session token was present but validation failed or did not return a role.");
+                    } else if (!storedSessionToken) {
+                        console.log("No stored session token found.");
+                    }
+                    renderLoginScreen();
+                }
+            }
+
+            function renderLoginScreen() {
+                clearElement(appRoot);
+                currentUser = null; // Clear any previous user state
+
+                const feedbackMessageEl = createElement('p', { className: 'feedback-message' });
+                const usernameInput = createElement('input', { type: 'text', placeholder: 'Username or Email', id: 'login-username', style: { marginBottom: '10px', width: '100%', boxSizing: 'border-box', padding: '10px', fontSize: '1em' } });
+                const passwordInput = createElement('input', { type: 'password', placeholder: 'Password', id: 'login-password', style: { marginBottom: '20px', width: '100%', boxSizing: 'border-box', padding: '10px', fontSize: '1em'} });
+
+                const loginButton = createElement('button', {
+                    style: { width: '100%', padding: '15px', fontSize: '1.2em' },
+                    onClick: async () => {
+                        const username = usernameInput.value.trim();
+                        const password = passwordInput.value.trim();
+
+                        if (!username || !password) {
+                            feedbackMessageEl.textContent = 'Please enter both username and password.';
+                            feedbackMessageEl.className = 'feedback-message error';
+                            return;
+                        }
+
+                        feedbackMessageEl.textContent = 'Attempting login...';
+                        feedbackMessageEl.className = 'feedback-message'; // Neutral
+
+                        try {
+                            // POST to the base path of the current URL
+                            const response = await fetch(window.location.origin + window.location.pathname, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ username: username, password: password, action: 'login' })
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data && data.role) {
+                                    if (data.session) { // Expecting 'session' item in response
+                                        localStorage.setItem('userSessionToken', data.session);
+                                        console.log("Login successful, session token stored:", data.session);
+                                    } else {
+                                        console.warn("Login successful but no session token provided in response.");
+                                    }
+                                    currentUser = data;
+                                    console.log("Direct login successful:", currentUser);
+                                    await initializeMainApplicationLogic();
+                                } else {
+                                    feedbackMessageEl.textContent = 'Login failed: Invalid credentials or server issue.';
+                                    feedbackMessageEl.className = 'feedback-message error';
+                                    console.warn("Login response missing role or invalid:", data);
+                                }
+                            } else {
+                                const errorText = await response.text();
+                                feedbackMessageEl.textContent = `Login failed: ${response.status} - ${errorText || 'Server error'}`;
+                                feedbackMessageEl.className = 'feedback-message error';
+                                console.error("Login error response:", response.status, errorText);
+                            }
+                        } catch (error) {
+                            feedbackMessageEl.textContent = 'Login error: Could not connect to the server.';
+                            feedbackMessageEl.className = 'feedback-message error';
+                            console.error("Login fetch/network error:", error);
+                        }
+                    }
+                }, 'Login');
+
+                const loginContainer = createElement('div', { className: 'container', style: { maxWidth: '400px', margin: '50px auto', textAlign: 'center', padding: '30px', border: '1px solid var(--input-border-color)', borderRadius: '8px', backgroundColor: '#fff' } }, [
+                    createElement('h1', { style: { color: 'var(--primary-color)', marginBottom: '25px' } }, 'CEO Inventory Tool Login'),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', { for: 'login-username', style: { display: 'block', marginBottom: '5px', textAlign: 'left', fontWeight: 'bold' } }, 'Username/Email:'),
+                        usernameInput
+                    ]),
+                    createElement('div', { className: 'form-group' }, [
+                        createElement('label', { for: 'login-password', style: { display: 'block', marginBottom: '5px', textAlign: 'left', fontWeight: 'bold' } }, 'Password:'),
+                        passwordInput
+                    ]),
+                    loginButton,
+                    feedbackMessageEl
+                ]);
+
+                appRoot.appendChild(loginContainer);
+            }
+
+            function handleLogout() {
+                currentUser = null; // Clear the current user's session data
+                localStorage.removeItem('userSessionToken'); // Remove the session token from local storage
+                console.log("User logged out, session token cleared.");
+                renderLoginScreen(); // Redirect to the login screen
+            }
+
+
+
+
+            initApp();
+            
+        });
+    </script>
+</body>
+</html>
